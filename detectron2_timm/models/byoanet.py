@@ -14,48 +14,12 @@ from timm.models.byoanet import default_cfgs, model_cfgs
 
 from detectron2.modeling import Backbone, BACKBONE_REGISTRY, ShapeSpec
 
+from detectron2_timm.config import get_cfg, cfg_from_defaults
+
 from detectron2.config import CfgNode
-from detectron2.config.defaults import _C as _c
 
 
 __all__ = []
-
-
-# configurations
-_C = _c.clone()
-_C.MODEL.BACKBONE.NAME = "build_botnet26t_256_backbone"
-_C.MODEL.BACKBONE.FREEZE_AT = 2
-
-_C.MODEL.BACKBONE.FIXED_INPUT_SIZE = True
-_C.MODEL.BACKBONE.POOL_SIZE = [8, 8]
-_C.MODEL.BACKBONE.OUT_FEATURES = ["stage4"]
-_C.MODEL.BACKBONE.REMOVE_LAYERS = ["final_conv", "head", ]
-
-_C.MODEL.RPN.IN_FEATURES = ["stage4"]
-_C.MODEL.ROI_HEADS.IN_FEATURES = ["stage4"]
-_C.MODEL.ROI_HEADS.NAME = "StandardROIHeads"
-
-_C.MODEL.ROI_BOX_HEAD.FC_DIM = 2048
-_C.MODEL.ROI_BOX_HEAD.NAME = "FastRCNNConvFCHead"
-_C.MODEL.ROI_BOX_HEAD.NUM_FC = 0
-_C.MODEL.ROI_BOX_HEAD.NUM_CONV = 3
-
-_C.INPUT.MAX_SIZE_TRAIN = 1024
-
-
-def cfg_from_defaults(cfg):
-    for name in default_cfgs:
-        attr = name.upper()
-        # setattr(_C.MODEL.BACKBONE, attr, CfgNode())
-        # node = getattr(_C.MODEL.BACKBONE, attr)
-        for key, item in default_cfgs[name].items():
-            # setattr(node, key.upper(), item)
-            setattr(cfg.MODEL.BACKBONE, key.upper(), item)
-    return cfg
-
-
-def get_cfg():
-    return _C.clone()
 
 
 def get_models(name: str = None) -> List[str]:
@@ -131,7 +95,7 @@ class Model(Backbone):
             self.strides[stage_name] = prev_stride * stride
             prev_stride *= stride
 
-    def forward(self, x):
+    def forward(self, x) -> dict:
         x = self.stem(x)
         features = {}
         for stage_name in self.stage_names:
@@ -174,7 +138,7 @@ class Model(Backbone):
     def get_stage_name(self, i: int) -> str:
         return f'stage{i}'
 
-    def get_stage_index(self, name: str) -> str:
+    def get_stage_index(self, name: str) -> int:
         return int(''.join(filter(str.isdigit, name)))
 
 
@@ -230,15 +194,16 @@ embed(locals())
 if __name__ == '__main__':
 
     cfg = get_cfg()
-    cfg = cfg_from_defaults(cfg)
+    cfg = cfg_from_defaults(cfg, default_cfgs)
 
-    m = build_botnet26t_256_backbone(_C, 1)
+    # m = build_botnet26t_256_backbone(cfg, 1)
+    cfg.MODEL.BACKBONE.NAME = "build_halonet26t_backbone"
 
     from detectron2.modeling import build_model
     r = {'image': torch.randn((3, 1024, 1024))}
     t = build_model(cfg)
 
-    print(">>> ", m.stage4[0].self_attn.pos_embed.height, m.stage4[0].self_attn.pos_embed.width)
+    # print(">>> ", m.stage4[0].self_attn.pos_embed.height, m.stage4[0].self_attn.pos_embed.width)
     
     t.eval()
     print(t)
@@ -246,5 +211,3 @@ if __name__ == '__main__':
 
     import IPython
     IPython.embed()
-    
-
