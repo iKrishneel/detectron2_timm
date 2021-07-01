@@ -3,19 +3,19 @@
 from typing import Union
 import torch.nn as nn
 
-from detectron2.modeling import Backbone, ShapeSpec
+from detectron2.modeling import Backbone as BB, ShapeSpec
 
 from .decorators import remove_layers
 
 
-__all__ = ['Model']
+__all__ = ['Backbone']
 
 
-class Model(Backbone):
+class Backbone(BB):
 
     @remove_layers
     def __init__(self, cfg, *, model, **kwargs):
-        super(Model, self).__init__()
+        super(Backbone, self).__init__()
         
         assert getattr(model, 'stages')
         assert getattr(model, 'stem')
