@@ -37,12 +37,10 @@ class Backbone(BB):
         model_config.OUT_FEATURES
         self.break_model(model, model_config)
 
-        key = 'add'
-        if key in model_config:
-            # TODO: create new layers
-            pass
-
+        # TODO: create new layers
+        
     def forward(self, x):
+        self.feature_maps = []
         x = self.model(x)
         assert len(self.feature_maps) == len(self.channels)
 
@@ -50,7 +48,6 @@ class Backbone(BB):
             stage: fmap
             for fmap, stage in zip(self.feature_maps, self.out_features)
         }
-        self.feature_maps = []
         return output
 
     def forward_hook(self, module, input, output):
