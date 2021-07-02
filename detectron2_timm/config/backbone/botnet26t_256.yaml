@@ -1,0 +1,21 @@
+MODEL:
+  BACKBONE:
+    CONFIG:
+      OUT_FEATURES:
+        - stages.0
+        - stages.1
+        - stages.2
+        - stages.3
+      STRIDES:
+        - 4
+        - 8
+        - 16
+        - 32
+      REMAPS:
+        - stage1
+        - stage2
+        - stage3
+        - stage4
+      REMOVE_LAYERS:
+        - final_conv
+        - head

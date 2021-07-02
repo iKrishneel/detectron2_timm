@@ -1,0 +1,20 @@
+INPUT:
+  FIXED_INPUT_SIZE: False
+MODEL:
+  BACKBONE:
+    CONFIG:
+      OUT_FEATURES:
+        - Mixed_5d
+        - Mixed_6e
+        - Mixed_7c
+      STRIDES:
+        - 8
+        - 16
+        - 32
+      REMAPS:
+        - stage5
+        - stage6
+        - stage7
+      REMOVE_LAYERS:
+        - final_conv
+        - head

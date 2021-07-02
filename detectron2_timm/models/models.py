@@ -97,17 +97,15 @@ if __name__ == '__main__':
 
     cfg = get_cfg()
     # cfg.merge_from_file('../config/backbone/botnet_26t_256.yaml')
-    cfg.merge_from_file('../config/backbone/inception_v3.yaml')
+    cfg.merge_from_file('../config/backbone/resnet50.yaml')
     
-    cfg.MODEL.BACKBONE.NAME = "build_inception_v3_backbone"
-
-    print(cfg.INPUT)
+    print(BACKBONE_REGISTRY)
 
     name = utils.get_model_name(cfg.MODEL.BACKBONE.NAME)
     hook(name, locals())
 
     use_d = False
-    s = [3, 299, 299]
+    s = [3, 224, 224]
     if use_d:
         from detectron2.modeling import build_model
 
@@ -115,7 +113,7 @@ if __name__ == '__main__':
         r = [{'image': torch.randn(s)}]
     else:
         # m = build_botnet26t_256_backbone(cfg, 1)
-        m = build_inception_v3_backbone(cfg, 1)
+        m = locals()[cfg.MODEL.BACKBONE.NAME](cfg, 1)
         r = torch.randn((1, *s))
 
     m.eval()

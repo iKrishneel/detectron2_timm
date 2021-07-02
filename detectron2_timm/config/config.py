@@ -9,11 +9,6 @@ _C = _c.clone()
 _C.MODEL.BACKBONE.NAME = "build_botnet26t_256_backbone"
 _C.MODEL.BACKBONE.FREEZE_AT = 0
 
-# backbone params
-# _C.MODEL.BACKBONE.POOL_SIZE = [8, 8]
-# _C.MODEL.BACKBONE.OUT_FEATURES = ["stage4"]
-# _C.MODEL.BACKBONE.REMOVE_LAYERS = ["final_conv", "head"]
-
 _C.MODEL.BACKBONE.CONFIG = CN()
 _C.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS = ["head"]
 _C.MODEL.BACKBONE.CONFIG.REMAPS = ["stage4"]
