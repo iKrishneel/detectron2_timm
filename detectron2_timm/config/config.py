@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from detectron2.config import CfgNode
+from detectron2.config import CfgNode as CN
 from detectron2.config.defaults import _C as _c
 
 
@@ -10,9 +10,15 @@ _C.MODEL.BACKBONE.NAME = "build_botnet26t_256_backbone"
 _C.MODEL.BACKBONE.FREEZE_AT = 0
 
 # backbone params
-_C.MODEL.BACKBONE.POOL_SIZE = [8, 8]
-_C.MODEL.BACKBONE.OUT_FEATURES = ["stage4"]
-_C.MODEL.BACKBONE.REMOVE_LAYERS = ["final_conv", "head"]
+# _C.MODEL.BACKBONE.POOL_SIZE = [8, 8]
+# _C.MODEL.BACKBONE.OUT_FEATURES = ["stage4"]
+# _C.MODEL.BACKBONE.REMOVE_LAYERS = ["final_conv", "head"]
+
+_C.MODEL.BACKBONE.CONFIG = CN()
+_C.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS = ["head"]
+_C.MODEL.BACKBONE.CONFIG.REMAPS = ["stage4"]
+_C.MODEL.BACKBONE.CONFIG.OUT_FEATURES = ["final_conv"]
+_C.MODEL.BACKBONE.CONFIG.STRIDES = [32]
 
 # rpn
 _C.MODEL.RPN.IN_FEATURES = ["stage4"]
@@ -38,6 +44,6 @@ def cfg_from_defaults(cfg, default_cfgs: dict):
         return cfg
 
 
-def get_cfg() -> CfgNode:
+def get_cfg() -> CN:
     return _C.clone()
 

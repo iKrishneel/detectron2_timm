@@ -32,7 +32,7 @@ def get_models(default_cfgs: dict, name: str = None) -> List[str]:
 
 
 def remove_named_children(cfg, original_model) -> nn.Module:
-    removals = cfg.MODEL.BACKBONE.REMOVE_LAYERS
+    removals = cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS
     model = nn.Sequential()
     for name, module in original_model.named_children():
         if name in removals:

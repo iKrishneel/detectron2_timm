@@ -3,6 +3,7 @@
 from typing import List, Union
 import torch.nn as nn
 
+from detectron2.config import CfgNode
 from detectron2.modeling import Backbone as BB, ShapeSpec
 
 from .decorators import remove_layers
@@ -22,10 +23,10 @@ class Backbone(BB):
         self.channels = {}
         self.feature_maps = []
 
-        # self.out_features = cfg.MODEL.BACKBONE.OUT_FEATURES
         freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
-
-        model_config = kwargs.get('model_config')
+        model_config = cfg.MODEL.BACKBONE.CONFIG
+        assert model_config
+        
         self.parse_model_config(model, model_config)
 
         self.model = model
@@ -33,17 +34,8 @@ class Backbone(BB):
 
     def parse_model_config(self, model, model_config):
 
-        key = 'remove'
-        if key in model_config:
-            # TODO remove these layers
-            pass
-
-        key = 'out_features'
-        if key in model_config:
-            self.break_model(model, model_config[key])
-        else:
-            print(model_config)
-            print(key)
+        model_config.OUT_FEATURES
+        self.break_model(model, model_config)
 
         key = 'add'
         if key in model_config:
@@ -64,23 +56,26 @@ class Backbone(BB):
     def forward_hook(self, module, input, output):
         self.feature_maps.append(output)
 
-    def break_model(self, model, break_cfg: dict):
+    def break_model(self, model, model_cfg: CfgNode):
 
-        print(break_cfg)
-        
-        layers = break_cfg['layers']
-        strides = break_cfg['strides']
+        layers = model_cfg.OUT_FEATURES
+        strides = model_cfg.STRIDES
+        remaps = model_cfg.REMAPS
 
         if not isinstance(layers, list):
             layers = [layers]
         if not isinstance(strides, list):
             strides = [strides]
+        
+        assert len(layers) > 0 and len(layers) == len(strides), \
+            'STRIDES and OUT_FEATURES must be same size and > 0'
 
-        assert len(layers) == len(strides)
-
-        prefix = break_cfg.get('prefix', 'c')
-
-        for i, layer in enumerate(layers, 1):
+        if len(remaps) > 0 and len(layers) != len(remaps):
+            raise ValueError(
+                'REMAP can either be empty or same size as OUT_FEATURES'
+            )
+        
+        for i, layer in enumerate(layers):
             splited = layer.split('.')
             module = model
             for s in splited:
@@ -88,7 +83,11 @@ class Backbone(BB):
 
             module.register_forward_hook(self.forward_hook)
 
-            stage_name = f'{prefix}{i}'
+            try:
+                stage_name = remaps[i]
+            except IndexError:
+                stage_name = layer
+
             self.out_features.append(stage_name)
             self.channels[stage_name] = self.get_channels(module)
             self.strides[stage_name] = strides[i - 1]
@@ -129,11 +128,3 @@ class Backbone(BB):
         assert stage_name in self.stage_names, f'Cannot freeze the {stage_name}'
 
         # TODO
-
-    """
-    def get_stage_name(self, i: int) -> str:
-        return f'stage{i}'
-
-    def get_stage_index(self, name: str) -> int:
-        return int(''.join(filter(str.isdigit, name)))
-    """

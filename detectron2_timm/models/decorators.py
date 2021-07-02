@@ -18,10 +18,10 @@ def remove_layers(func):
         assert model is not None
 
         assert model.feature_info
-
+        
         feature_info = [
             info for info in model.feature_info
-            if info['module'] not in cfg.MODEL.BACKBONE.REMOVE_LAYERS
+            if info['module'] not in cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS
         ]
         
         model = remove_named_children(cfg, model)
