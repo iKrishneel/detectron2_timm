@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import os.path as osp
+import yaml
+
 from typing import List
 from difflib import get_close_matches
 
@@ -52,3 +55,10 @@ def get_model_name(func_name: str, replace_with: str='') -> str:
     assert len(func_name) > 0
     name = func_name.replace(_PREFIX, replace_with)
     return name.replace(_SUFFIX, replace_with)
+
+
+def load_yaml(path: str) -> dict:
+    assert osp.isfile(path)
+    with open(path, 'r') as stream:
+        data = yaml.safe_load(stream)
+    return data

@@ -22,11 +22,16 @@ def build_detectron2_backbone(
     assert func_name in __all__ , f'{func_name} not found'
 
     model_name = utils.get_model_name(func_name)
-    model = Backbone(
-        cfg, model=utils.get_models(default_cfgs)[model_name],
+    attrs = {
+        'img_size': (cfg.INPUT.MAX_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN),
+        'num_classes': cfg.MODEL.ROI_HEADS.NUM_CLASSES
+    }        
+    model = utils.get_models(default_cfgs)[model_name](**attrs)    
+    backbone = Backbone(
+        cfg, model=model,  # utils.get_models(default_cfgs)[model_name],
         model_config=utils.find_model_config(model_cfgs, model_name)
     )    
-    return model
+    return backbone
     
 
 def hook(

@@ -12,7 +12,7 @@ _C.MODEL.BACKBONE.FREEZE_AT = 0
 # backbone params
 _C.MODEL.BACKBONE.POOL_SIZE = [8, 8]
 _C.MODEL.BACKBONE.OUT_FEATURES = ["stage4"]
-_C.MODEL.BACKBONE.REMOVE_LAYERS = ["final_conv", "head", ]
+_C.MODEL.BACKBONE.REMOVE_LAYERS = ["final_conv", "head"]
 
 # rpn
 _C.MODEL.RPN.IN_FEATURES = ["stage4"]

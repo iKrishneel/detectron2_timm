@@ -15,12 +15,18 @@ def remove_layers(func):
     def wrapper(self, *args, **kwargs):
         cfg = args[0]
         model = kwargs.pop('model')
+        assert model is not None
 
-        attrs = {
-            'img_size': (cfg.INPUT.MAX_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN),
-            'num_classes': cfg.MODEL.ROI_HEADS.NUM_CLASSES
-        }        
-        model = model(**attrs)
+        assert model.feature_info
+
+        feature_info = [
+            info for info in model.feature_info
+            if info['module'] not in cfg.MODEL.BACKBONE.REMOVE_LAYERS
+        ]
+        
         model = remove_named_children(cfg, model)
-        func(self, cfg, model=model, **kwargs)
+        func(
+            self, cfg, model=model,
+            feature_info=feature_info, **kwargs
+        )
     return wrapper
