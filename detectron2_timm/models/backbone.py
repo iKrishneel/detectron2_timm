@@ -13,7 +13,6 @@ __all__ = ['Backbone']
 
 
 class Backbone(BB):
-
     @remove_layers
     def __init__(self, cfg, *, model, **kwargs) -> None:
         super(Backbone, self).__init__()
@@ -26,7 +25,7 @@ class Backbone(BB):
         freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
         model_config = cfg.MODEL.BACKBONE.CONFIG
         assert model_config
-        
+
         self.parse_model_config(model, model_config)
 
         self.model = model
@@ -38,7 +37,7 @@ class Backbone(BB):
         self.break_model(model, model_config)
 
         # TODO: create new layers
-        
+
     def forward(self, x):
         self.feature_maps = []
         x = self.model(x)
@@ -63,15 +62,16 @@ class Backbone(BB):
             layers = [layers]
         if not isinstance(strides, list):
             strides = [strides]
-        
-        assert len(layers) > 0 and len(layers) == len(strides), \
-            'STRIDES and OUT_FEATURES must be same size and > 0'
+
+        assert len(layers) > 0 and len(layers) == len(
+            strides
+        ), 'STRIDES and OUT_FEATURES must be same size and > 0'
 
         if len(remaps) > 0 and len(layers) != len(remaps):
             raise ValueError(
                 'REMAP can either be empty or same size as OUT_FEATURES'
             )
-        
+
         for i, layer in enumerate(layers):
             splited = layer.split('.')
             module = model
@@ -118,7 +118,7 @@ class Backbone(BB):
 
         if at == 0:
             return
-        
+
         if isinstance(at, int):
             stage_name = self.get_stage_name(at)
 

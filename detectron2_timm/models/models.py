@@ -22,39 +22,39 @@ def get_attr(name: str):
 
 
 def get_model_attrs(cfg: CfgNode) -> dict:
-    attrs = {
-        'num_classes': cfg.MODEL.ROI_HEADS.NUM_CLASSES
-    }
+    attrs = {'num_classes': cfg.MODEL.ROI_HEADS.NUM_CLASSES}
     if cfg.INPUT.FIXED_INPUT_SIZE:
         attrs.update(
-            {'img_size': (cfg.INPUT.MAX_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN),}
+            {
+                'img_size': (
+                    cfg.INPUT.MAX_SIZE_TRAIN,
+                    cfg.INPUT.MAX_SIZE_TRAIN,
+                ),
+            }
         )
-        
-    return attrs
-    
 
-def build_detectron2_backbone(
-        cfg: CfgNode, input_shape: ShapeSpec
-) -> Backbone:
+    return attrs
+
+
+def build_detectron2_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> Backbone:
     func_name = cfg.MODEL.BACKBONE.NAME
-    assert func_name in __all__ , f'{func_name} not found'
+    assert func_name in __all__, f'{func_name} not found'
     model_name = utils.get_model_name(func_name)
     assert model_name
-    
+
     model = get_attr(name=model_name)
     assert model and callable(model)
 
     backbone = Backbone(
-        cfg, model=model(**get_model_attrs(cfg)),
-    )    
+        cfg,
+        model=model(**get_model_attrs(cfg)),
+    )
     return backbone
 
 
-def hook(
-        model_name: str, local_s = None, **kwargs: dict
-) -> None:
+def hook(model_name: str, local_s=None, **kwargs: dict) -> None:
     assert model_name in list_models()
-    
+
     func_name = utils.get_func_name(model_name=model_name)
     if local_s is not None:
         local_s.update({func_name: build_detectron2_backbone})
@@ -69,9 +69,7 @@ def hook(
 def register(local_s, module) -> None:
 
     if callable(module):
-        model_dict = {
-            module.__name__: module
-        }
+        model_dict = {module.__name__: module}
     else:
         default_cfgs = getattr(module, 'default_cfgs')
         model_dict = utils.get_models(default_cfgs)
@@ -85,7 +83,7 @@ def register_all(local_s) -> None:
     for module_name in list_modules():
         module = get_attr(module_name)
         register(local_s, module)
-    
+
 
 # register_all(locals())
 
@@ -98,13 +96,13 @@ if __name__ == '__main__':
     cfg = get_cfg()
     # cfg.merge_from_file('../config/backbone/botnet_26t_256.yaml')
     cfg.merge_from_file('../config/backbone/resnet50.yaml')
-    
+
     print(BACKBONE_REGISTRY)
 
     name = utils.get_model_name(cfg.MODEL.BACKBONE.NAME)
     hook(name, locals())
 
-    use_d = False
+    use_d = True
     s = [3, 224, 224]
     if use_d:
         from detectron2.modeling import build_model

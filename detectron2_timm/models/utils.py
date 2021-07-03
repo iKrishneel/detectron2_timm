@@ -51,7 +51,7 @@ def get_func_name(model_name: str) -> str:
     return f'{_PREFIX + model_name + _SUFFIX}'
 
 
-def get_model_name(func_name: str, replace_with: str='') -> str:
+def get_model_name(func_name: str, replace_with: str = '') -> str:
     assert len(func_name) > 0
     name = func_name.replace(_PREFIX, replace_with)
     return name.replace(_SUFFIX, replace_with)

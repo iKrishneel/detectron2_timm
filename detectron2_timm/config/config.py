@@ -41,4 +41,3 @@ def cfg_from_defaults(cfg, default_cfgs: dict):
 
 def get_cfg() -> CN:
     return _C.clone()
-
