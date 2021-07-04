@@ -9,8 +9,6 @@ from difflib import get_close_matches
 import torch.nn as nn
 
 import timm.models as tmodels
-from detectron2.modeling import ShapeSpec
-from detectron2.config import CfgNode
 
 
 _PREFIX: str = 'build_'
@@ -23,8 +21,8 @@ def get_models(default_cfgs: dict, name: str = None) -> List[str]:
         try:
             assert name in default_cfgs
             return getattr(tmodels, name)
-        except:
-            raise ValueError(f'Model name {model_name} not found')
+        except AttributeError:
+            raise ValueError(f'Model name {name} not found')
 
     return {
         model_name: getattr(tmodels, model_name)

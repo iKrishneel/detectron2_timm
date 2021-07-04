@@ -33,7 +33,6 @@ _C.INPUT.FIXED_INPUT_SIZE = True
 
 def cfg_from_defaults(cfg, default_cfgs: dict):
     for name in default_cfgs:
-        attr = name.upper()
         for key, item in default_cfgs[name].items():
             setattr(cfg.MODEL.BACKBONE, key.upper(), item)
         return cfg

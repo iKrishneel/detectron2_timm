@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 
-import timm.models as tmodels
 from timm.models import list_models, list_modules
 
 from detectron2.modeling import BACKBONE_REGISTRY
 
-from .models import (
-    build_detectron2_backbone, build_detectron2_fpn_backbone
-)
+from .models import build_detectron2_backbone, build_detectron2_fpn_backbone
 from .models import utils
 
 
@@ -38,7 +35,6 @@ def register(build_func, local_s, module) -> None:
 
 
 def register_all(local_s) -> None:
-    not_found = []
     for module_name in list_modules():
         module = utils.get_attr(module_name)
         register(build_detectron2_backbone, local_s, module)

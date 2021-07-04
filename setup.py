@@ -20,9 +20,8 @@ install_requires = [
     'torch',
     'torchvision',
     'tqdm',
-    'scipy',
     'pytest',
-    'timm'
+    'timm',
 ]
 
 setup(

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from typing import List, Union
-import torch.nn as nn
+from typing import Union
 
 from detectron2.config import CfgNode
 from detectron2.modeling import Backbone as BB, ShapeSpec
@@ -22,7 +21,7 @@ class Backbone(BB):
         self.channels = {}
         self.feature_maps = []
 
-        freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
+        # freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
         model_config = cfg.MODEL.BACKBONE.CONFIG
         assert model_config
 

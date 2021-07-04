@@ -8,10 +8,7 @@ from detectron2_timm.models import utils
 from detectron2_timm.models.backbone import Backbone
 
 
-__all__ = [
-    'build_detectron2_backbone',
-    'build_detectron2_fpn_backbone'
-]
+__all__ = ['build_detectron2_backbone', 'build_detectron2_fpn_backbone']
 
 
 def get_model_attrs(cfg: CfgNode) -> dict:
@@ -46,7 +43,7 @@ def build_detectron2_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> Backbone:
 
 
 def build_detectron2_fpn_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> FPN:
-    in_features = cfg.MODEL.FPN.IN_FEATURES
+    # in_features = cfg.MODEL.FPN.IN_FEATURES
     out_channels = cfg.MODEL.FPN.OUT_CHANNELS
     norm = cfg.MODEL.FPN.NORM
     fuse_type = cfg.MODEL.FPN.FUSE_TYPE
@@ -57,6 +54,6 @@ def build_detectron2_fpn_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> FPN:
         out_channels=out_channels,
         norm=norm,
         top_block=LastLevelMaxPool(),
-        fuse_type=fuse_type
+        fuse_type=fuse_type,
     )
     return backbone
