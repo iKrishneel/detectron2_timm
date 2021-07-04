@@ -20,6 +20,7 @@ class Backbone(BB):
         self.strides = {}
         self.channels = {}
         self.feature_maps = []
+        self.feature_info = kwargs.get('feature_info')
 
         # freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
         model_config = cfg.MODEL.BACKBONE.CONFIG
@@ -56,6 +57,8 @@ class Backbone(BB):
         layers = model_cfg.OUT_FEATURES
         strides = model_cfg.STRIDES
         remaps = model_cfg.REMAPS
+
+        # TODO: Break using the default feature_info
 
         if not isinstance(layers, list):
             layers = [layers]

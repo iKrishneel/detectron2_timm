@@ -13,8 +13,8 @@ def remove_layers(func):
     def wrapper(self, *args, **kwargs):
         cfg = args[0]
         model = kwargs.pop('model')
-        assert model is not None
 
+        assert model is not None
         assert model.feature_info
 
         feature_info = [

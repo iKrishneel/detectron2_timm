@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
 import torch
-from detectron2.modeling import BACKBONE_REGISTRY
+from detectron2.modeling import BACKBONE_REGISTRY  # NOQA
 
-# import detectron2_timm
 from detectron2_timm.config import get_cfg
 from detectron2_timm.models import utils
+
+from detectron2_timm.register import register, hook  # NOQA
 
 
 if __name__ == '__main__':
     cfg = get_cfg()
     # cfg.merge_from_file('../config/backbone/botnet_26t_256.yaml')
     cfg.merge_from_file('../detectron2_timm/config/backbone/resnet50.yaml')
-    print(BACKBONE_REGISTRY)
 
     name = utils.get_model_name(cfg.MODEL.BACKBONE.NAME)
     print("Model Name: ", name)
@@ -25,7 +25,6 @@ if __name__ == '__main__':
         m = build_model(cfg)
         r = [{'image': torch.randn(s)}]
     else:
-        # m = build_botnet26t_256_backbone(cfg, 1)
         m = locals()[cfg.MODEL.BACKBONE.NAME](cfg, 1)
         r = torch.randn((1, *s))
 
