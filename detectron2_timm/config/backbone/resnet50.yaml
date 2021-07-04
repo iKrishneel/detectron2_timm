@@ -1,0 +1,30 @@
+INPUT:
+  FIXED_INPUT_SIZE: False
+MODEL:
+  RPN:
+    IN_FEATURES:
+      - res5
+  ROI_HEADS:
+    IN_FEATURES:
+      - res5
+  BACKBONE:
+    NAME: build_resnet50_backbone
+    CONFIG:
+      OUT_FEATURES:
+        - layer1
+        - layer2
+        - layer3
+        - layer4
+      STRIDES:
+        - 4
+        - 8
+        - 16
+        - 32
+      REMAPS:
+        - res2
+        - res3
+        - res4
+        - res5
+      REMOVE_LAYERS:
+        - global_pool
+        - fc

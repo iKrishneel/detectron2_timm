@@ -14,6 +14,7 @@ from detectron2.config import CfgNode
 
 
 _PREFIX: str = 'build_'
+_DETECTRON2: str = 'detectron2'
 _SUFFIX: str = '_backbone'
 
 
@@ -46,9 +47,9 @@ def find_model_config(model_cfgs: dict, model_name: str) -> dict:
     return model_cfgs[match]
 
 
-def get_func_name(model_name: str) -> str:
-    assert len(model_name) > 0
-    return f'{_PREFIX + model_name + _SUFFIX}'
+def get_func_name(func, model_name: str) -> str:
+    assert len(model_name) > 0 and callable(func)
+    return func.__name__.replace(_DETECTRON2, model_name)
 
 
 def get_model_name(func_name: str, replace_with: str = '') -> str:
@@ -62,3 +63,7 @@ def load_yaml(path: str) -> dict:
     with open(path, 'r') as stream:
         data = yaml.safe_load(stream)
     return data
+
+
+def get_attr(name: str):
+    return getattr(tmodels, name)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
-import importlib
-
-# from .byoanet import __all__
+from .models import (
+    build_detectron2_backbone,
+    build_detectron2_fpn_backbone
+)
