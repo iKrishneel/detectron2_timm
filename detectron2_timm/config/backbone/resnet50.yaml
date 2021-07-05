@@ -1,3 +1,4 @@
+VERSION: 2
 INPUT:
   FIXED_INPUT_SIZE: False
 MODEL:
@@ -5,10 +6,16 @@ MODEL:
     IN_FEATURES:
       - res5
   ROI_HEADS:
+    NAME: StandardROIHeads
     IN_FEATURES:
       - res5
+  ROI_BOX_HEAD:
+    NAME: FastRCNNConvFCHead
+    FC_DIM: 2048
+    NUM_CONV: 3
   BACKBONE:
     NAME: build_resnet50_backbone
+    FREEZE_AT: 2
     CONFIG:
       OUT_FEATURES:
         - layer1

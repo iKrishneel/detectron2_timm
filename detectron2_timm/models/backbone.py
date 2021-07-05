@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
-from typing import Union
+from typing import List
 
 from detectron2.config import CfgNode
 from detectron2.modeling import Backbone as BB, ShapeSpec
+from detectron2.utils.logger import logging
 
 from .decorators import remove_layers
 
 
 __all__ = ['Backbone']
+
+logger = logging.getLogger(__name__)
 
 
 class Backbone(BB):
@@ -20,16 +23,24 @@ class Backbone(BB):
         self.strides = {}
         self.channels = {}
         self.feature_maps = []
-        self.feature_info = kwargs.get('feature_info')
 
-        # freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
+        self._feature_remap = {}
+
+        freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
         model_config = cfg.MODEL.BACKBONE.CONFIG
         assert model_config
 
-        self.parse_model_config(model, model_config)
+        if len(model_config.OUT_FEATURES) == 0:
+            logger.info('Using default feature info')
+            model_config = self.config_from_feature_info(
+                model_config, kwargs.get('feature_info')
+            )
 
+        self.parse_model_config(model, model_config)
         self.model = model
         self.model_config = model_config
+
+        self._freeze_at(at=freeze_at)
 
     def parse_model_config(self, model, model_config):
 
@@ -91,6 +102,8 @@ class Backbone(BB):
             self.channels[stage_name] = self.get_channels(module)
             self.strides[stage_name] = strides[i - 1]
 
+            self._feature_remap[stage_name] = layer
+
     def get_strides(self, module) -> int:
         stride = 1
         # TODO: estimate module stride
@@ -115,15 +128,26 @@ class Backbone(BB):
             for name in self.out_features
         }
 
-    def _freeze_at(self, at: Union[int, str]) -> None:
-        assert len(self.stage_names) > 0
+    def config_from_feature_info(
+        self, cfg, feature_infos: List[dict]
+    ) -> CfgNode:
+        assert len(feature_infos) > 0
 
+        for feature_info in feature_infos:
+            cfg.OUT_FEATURES.append(feature_info['module'])
+            cfg.STRIDES.append(feature_info['reduction'])
+        return cfg
+
+    def _freeze_at(self, at: str) -> None:
         if at == 0:
             return
+        assert at <= len(
+            self.out_features
+        ), f'Freeze at: {at}, is outside the lenght of {self.out_features}'
 
-        if isinstance(at, int):
-            stage_name = self.get_stage_name(at)
-
-        assert stage_name in self.stage_names, f'Cannot freeze the {stage_name}'
-
-        # TODO
+        freeze_layer = self._feature_remap[self.out_features[at]]
+        for name, feature in self.model.named_children():
+            for params in feature.parameters():
+                params.requires_grad = False
+            if name == freeze_layer:
+                break
