@@ -1,0 +1,42 @@
+VERSION: 2
+INPUT:
+  FIXED_INPUT_SIZE: True
+
+VERSION: 2
+INPUT:
+  FIXED_INPUT_SIZE: False
+MODEL:
+  RPN:
+    IN_FEATURES:
+      - res5
+  ROI_HEADS:
+    NAME: StandardROIHeads
+    IN_FEATURES:
+      - res5
+  ROI_BOX_HEAD:
+    NAME: FastRCNNConvFCHead
+    FC_DIM: 2048
+    NUM_CONV: 3
+  BACKBONE:
+    NAME: build_swin_base_patch4_window12_384_backbone
+    FREEZE_AT: 2
+    CONFIG:
+      OUT_FEATURES:
+        - layers.0
+        - layers.1
+        - layers.2
+        - layers.3
+      STRIDES:
+        - 4
+        - 8
+        - 16
+        - 32
+      REMAPS:
+        - layer1
+        - layer2
+        - layer3
+        - layer4
+      REMOVE_LAYERS:
+        - norm
+        - avgpool
+        - head

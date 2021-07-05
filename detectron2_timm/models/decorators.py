@@ -15,13 +15,16 @@ def remove_layers(func):
         model = kwargs.pop('model')
 
         assert model is not None
-        assert model.feature_info
+        # assert model.feature_info
 
-        feature_info = [
-            info
-            for info in model.feature_info
-            if info['module'] not in cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS
-        ]
+        try:
+            feature_info = [
+                info
+                for info in model.feature_info
+                if info['module'] not in cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS
+            ]
+        except AttributeError:
+            feature_info = None
 
         model = remove_named_children(cfg, model)
         func(self, cfg, model=model, feature_info=feature_info, **kwargs)
