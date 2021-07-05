@@ -53,7 +53,8 @@ def get_func_name(func, model_name: str) -> str:
 def get_model_name(func_name: str, replace_with: str = '') -> str:
     assert len(func_name) > 0
     name = func_name.replace(_PREFIX, replace_with)
-    return name.replace(_SUFFIX, replace_with)
+    name = name.replace(_SUFFIX, replace_with)
+    return name.replace('_fpn', replace_with)
 
 
 def load_yaml(path: str) -> dict:

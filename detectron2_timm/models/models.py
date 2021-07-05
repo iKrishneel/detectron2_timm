@@ -43,7 +43,7 @@ def build_detectron2_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> Backbone:
 
 
 def build_detectron2_fpn_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> FPN:
-    # in_features = cfg.MODEL.FPN.IN_FEATURES
+    in_features = cfg.MODEL.FPN.IN_FEATURES
     out_channels = cfg.MODEL.FPN.OUT_CHANNELS
     norm = cfg.MODEL.FPN.NORM
     fuse_type = cfg.MODEL.FPN.FUSE_TYPE
@@ -51,6 +51,7 @@ def build_detectron2_fpn_backbone(cfg: CfgNode, input_shape: ShapeSpec) -> FPN:
     bottom_up = build_detectron2_backbone(cfg, input_shape)
     backbone = FPN(
         bottom_up=bottom_up,
+        in_features=in_features,
         out_channels=out_channels,
         norm=norm,
         top_block=LastLevelMaxPool(),

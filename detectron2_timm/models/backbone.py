@@ -69,8 +69,6 @@ class Backbone(BB):
         strides = model_cfg.STRIDES
         remaps = model_cfg.REMAPS
 
-        # TODO: Break using the default feature_info
-
         if not isinstance(layers, list):
             layers = [layers]
         if not isinstance(strides, list):
@@ -85,7 +83,7 @@ class Backbone(BB):
                 'REMAP can either be empty or same size as OUT_FEATURES'
             )
 
-        for i, layer in enumerate(layers):
+        for i, (layer, stride) in enumerate(zip(layers, strides)):
             splited = layer.split('.')
             module = model
             for s in splited:
@@ -100,8 +98,7 @@ class Backbone(BB):
 
             self.out_features.append(stage_name)
             self.channels[stage_name] = self.get_channels(module)
-            self.strides[stage_name] = strides[i - 1]
-
+            self.strides[stage_name] = stride
             self._feature_remap[stage_name] = layer
 
     def get_strides(self, module) -> int:
