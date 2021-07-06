@@ -58,5 +58,7 @@ SOLVER:
   CHECKPOINT_PERIOD: 5000
   WEIGHT_DECAY: 0.00004
 DATASETS:
-  TRAIN: ("coco_2017_val",)
+  TRAIN: ("coco_2017_train",)
   TEST: ("coco_2017_val",)
+TEST:
+  EVAL_PERIOD: 5000

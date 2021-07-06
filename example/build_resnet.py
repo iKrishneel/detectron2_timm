@@ -81,7 +81,7 @@ if __name__ == '__main__':
     if args.debug:
         debug(args)
     else:
-        train = False
+        train = True
         if train:
             launch(main, args.num_gpus, args=(args,), dist_url='auto')
         else:
