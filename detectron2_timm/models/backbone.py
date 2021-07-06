@@ -136,13 +136,13 @@ class Backbone(BB):
         return cfg
 
     def _freeze_at(self, at: str) -> None:
-        if at == 0:
+        if at < 1:
             return
-        assert at <= len(
+        assert (at - 1) <= len(
             self.out_features
         ), f'Freeze at: {at}, is outside the lenght of {self.out_features}'
 
-        freeze_layer = self._feature_remap[self.out_features[at]]
+        freeze_layer = self._feature_remap[self.out_features[at - 1]]
         for name, feature in self.model.named_children():
             for params in feature.parameters():
                 params.requires_grad = False

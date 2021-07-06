@@ -15,8 +15,6 @@ def remove_layers(func):
         model = kwargs.pop('model')
 
         assert model is not None
-        # assert model.feature_info
-
         try:
             feature_info = [
                 info

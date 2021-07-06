@@ -12,7 +12,10 @@ __all__ = ['build_detectron2_backbone', 'build_detectron2_fpn_backbone']
 
 
 def get_model_attrs(cfg: CfgNode) -> dict:
-    attrs = {'num_classes': cfg.MODEL.ROI_HEADS.NUM_CLASSES}
+    attrs = {
+        'num_classes': cfg.MODEL.ROI_HEADS.NUM_CLASSES,
+        'pretrained': cfg.MODEL.BACKBONE.CONFIG.PRETRAINED,
+    }
     if cfg.INPUT.FIXED_INPUT_SIZE:
         attrs.update(
             {
