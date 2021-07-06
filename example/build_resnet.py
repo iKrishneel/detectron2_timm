@@ -13,6 +13,8 @@ from detectron2.engine import (
 from detectron2_timm.config import get_cfg
 from detectron2_timm.models import utils
 
+# from utils import visualize_features
+
 
 def setup(args):
     cfg = get_cfg()
@@ -51,14 +53,15 @@ def debug(args):
         from detectron2.modeling import build_model
 
         m = build_model(cfg)
-        r = [{'image': torch.randn(s)}]
+        x = [{'image': torch.randn(s)}]
     else:
         m = locals()[cfg.MODEL.BACKBONE.NAME](cfg, 1)
-        r = torch.randn((1, *s))
+        x = torch.randn((1, *s))
 
+    m = m.to('cpu')
     m.eval()
     with torch.no_grad():
-        z = m(r)
+        z = m(x)
 
     import IPython
 
