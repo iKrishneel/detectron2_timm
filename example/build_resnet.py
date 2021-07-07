@@ -1,19 +1,47 @@
 #!/usr/bin/env python
 
-import torch
-from detectron2.modeling import BACKBONE_REGISTRY  # NOQA
+import os
+from dataclasses import dataclass
 
+import torch
+
+from detectron2.modeling import BACKBONE_REGISTRY  # NOQA
+from detectron2.config import CfgNode
 from detectron2.engine import (
     DefaultTrainer,
     default_argument_parser,
     default_setup,
     launch,
 )
+from detectron2.data import MetadataCatalog
+from detectron2.evaluation import COCOEvaluator
 
 from detectron2_timm.config import get_cfg
 from detectron2_timm.models import utils
 
 # from utils import visualize_features
+
+
+@dataclass
+class Trainer(DefaultTrainer):
+
+    cfg: CfgNode = None
+
+    def __post_init__(self):
+        assert self.cfg
+        super(Trainer, self).__init__(self.cfg)
+
+    @classmethod
+    def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+        if output_folder is None:
+            output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
+        evaluator_type = MetadataCatalog.get(dataset_name).evaluator_type
+
+        if evaluator_type == 'coco':
+            evaluator = COCOEvaluator(dataset_name=dataset_name)
+        else:
+            raise ValueError('Evaluator type is unknown!')
+        return evaluator
 
 
 def setup(args):
@@ -34,7 +62,7 @@ def setup(args):
 def main(args=None):
 
     cfg = setup(args)
-    trainer = DefaultTrainer(cfg)
+    trainer = Trainer(cfg)
     trainer.resume_or_load(resume=args.resume)
 
     return trainer.train()
@@ -74,7 +102,6 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', required=True, type=str)
     parser.add_argument('--num_gpus', required=False, type=int, default=1)
     parser.add_argument('--weights', required=False, type=str, default=None)
-    parser.add_argument('--reduced_coco', action='store_true', default=False)
     parser.add_argument('--debug', action='store_true', default=False)
     args = parser.parse_args()
 
