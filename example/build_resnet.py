@@ -65,6 +65,10 @@ def main(args=None):
     trainer = Trainer(cfg)
     trainer.resume_or_load(resume=args.resume)
 
+    import IPython
+
+    IPython.embed()
+
     return trainer.train()
 
 
@@ -82,13 +86,16 @@ def debug(args):
 
         m = build_model(cfg)
         x = [{'image': torch.randn(s)}]
-    else:
-        m = locals()[cfg.MODEL.BACKBONE.NAME](cfg, 1)
-        x = torch.randn((1, *s))
 
-    m = m.to('cpu')
-    m.eval()
-    with torch.no_grad():
+        m = m.to('cpu')
+        m.eval()
+        with torch.no_grad():
+            z = m(x)
+    else:
+        import detectron2_timm
+
+        m = getattr(detectron2_timm, cfg.MODEL.BACKBONE.NAME)(cfg, 1)
+        x = torch.randn((1, *s))
         z = m(x)
 
     import IPython

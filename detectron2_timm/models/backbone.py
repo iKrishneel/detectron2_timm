@@ -52,6 +52,7 @@ class Backbone(BB):
     def forward(self, x):
         self.feature_maps = []
         x = self.model(x)
+
         assert len(self.feature_maps) == len(self.channels)
 
         output = {

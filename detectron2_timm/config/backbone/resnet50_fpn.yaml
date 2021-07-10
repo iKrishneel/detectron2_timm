@@ -38,8 +38,7 @@ MODEL:
     NUM_CLASSES: &num_classes 80
   ROI_BOX_HEAD:
     NAME: FastRCNNConvFCHead
-    FC_DIM: 2048
-    NUM_CONV: 2
+    NUM_FC: 2
     POOLER_RESOLUTION: 7
   FPN:
     IN_FEATURES: ["res2", "res3", "res4", "res5"]
