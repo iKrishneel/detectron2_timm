@@ -13,6 +13,7 @@ except Exception:
 
 # write all package dependencies here
 install_requires = [
+    'einops',
     'numpy',
     'matplotlib',
     'opencv-python',
