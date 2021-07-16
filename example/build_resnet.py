@@ -48,6 +48,21 @@ def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)
 
+    cfg.MODEL.BACKBONE.NAME = 'build_resnet50_fpn_backbone'
+    cfg.MODEL.BACKBONE.FREEZE_AT = 0
+    cfg.MODEL.BACKBONE.CONFIG.PRETRAINED = False
+    cfg.MODEL.BACKBONE.CONFIG.OUT_FEATURES = [
+        'layer1',
+        'layer2',
+        'layer3',
+        'layer4',
+    ]
+    cfg.MODEL.BACKBONE.CONFIG.STRIDES = [4, 8, 16, 32]
+    cfg.MODEL.BACKBONE.CONFIG.REMAPS = ['res2', 'res3', 'res4', 'res5']
+    cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS = ['global_pool', 'fc']
+
+    cfg.INPUT.FIXED_INPUT_SIZE = False
+
     try:
         cfg.OUTPUT_DIR = args.output_dir
         cfg.MODEL.WEIGHTS = args.weights
@@ -64,10 +79,6 @@ def main(args=None):
     cfg = setup(args)
     trainer = Trainer(cfg)
     trainer.resume_or_load(resume=args.resume)
-
-    import IPython
-
-    IPython.embed()
 
     return trainer.train()
 
