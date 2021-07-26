@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+import math
 from typing import List
+
+from einops import rearrange
 
 from detectron2.config import CfgNode
 from detectron2.modeling import Backbone as BB, ShapeSpec
@@ -25,6 +28,7 @@ class Backbone(BB):
         self.feature_maps = []
 
         self._feature_remap = {}
+        self._in_shape = None
 
         freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
         model_config = cfg.MODEL.BACKBONE.CONFIG
@@ -36,7 +40,7 @@ class Backbone(BB):
                 model_config, kwargs.get('feature_info')
             )
 
-        self.parse_model_config(model, model_config)
+        self.parse_model_config(model.model, model_config)
         self.model = model
         self.model_config = model_config
 
@@ -50,6 +54,7 @@ class Backbone(BB):
         # TODO: create new layers
 
     def forward(self, x):
+        self._in_shape = x.shape
         self.feature_maps = []
         x = self.model(x)
 
@@ -59,10 +64,17 @@ class Backbone(BB):
             stage: fmap
             for fmap, stage in zip(self.feature_maps, self.out_features)
         }
-        return output
+        return self.model.feature_res_adj(output)
 
     def forward_hook(self, module, input, output):
-        self.feature_maps.append(output)
+        if len(output.shape) == 3:
+            h, w = self._in_shape[2:]
+            k = int(math.sqrt((h * w) // output.shape[1]))
+            self.feature_maps.append(
+                rearrange(output, 'b (h1 w1) c -> b c h1 w1', h1=h//k, w1=w//k)
+            )
+        else:
+            self.feature_maps.append(output)
 
     def break_model(self, model, model_cfg: CfgNode):
 

@@ -61,6 +61,9 @@ def setup(args):
     cfg.MODEL.BACKBONE.CONFIG.REMAPS = ['res2', 'res3', 'res4', 'res5']
     cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS = ['global_pool', 'fc']
 
+    cfg.MODEL.RPN.IN_FEATURES = ['res2', 'res3', 'res4', 'res5']
+    cfg.MODEL.ROI_HEADS.IN_FEATURES = ['res2', 'res3', 'res4', 'res5']
+
     cfg.INPUT.FIXED_INPUT_SIZE = False
 
     try:

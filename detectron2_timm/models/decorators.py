@@ -3,6 +3,7 @@
 import functools
 
 from .utils import remove_named_children
+from .modules import wrap
 
 
 __all__ = ['remove_layers']
@@ -25,6 +26,6 @@ def remove_layers(func):
             feature_info = None
 
         model = remove_named_children(cfg, model)
-        func(self, cfg, model=model, feature_info=feature_info, **kwargs)
+        func(self, cfg, model=wrap(cfg, model), feature_info=feature_info, **kwargs)
 
     return wrapper
