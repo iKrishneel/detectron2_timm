@@ -43,12 +43,14 @@ class Base(nn.Module):
 class XCiT(Base):
 
     __name__ = 'xcit'
-    
+
     def __init__(self, cfg, model: nn.Module):
         super(XCiT, self).__init__(cfg, model)
 
         self._in_shape = None
-        
+        self.model.cls_token.requires_grad = False
+        delattr(self.model, 'cls_token')
+
     def forward(self, x):
         self._in_shape = x.shape
         b = x.shape[0]
