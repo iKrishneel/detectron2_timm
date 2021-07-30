@@ -26,6 +26,12 @@ def remove_layers(func):
             feature_info = None
 
         model = remove_named_children(cfg, model)
-        func(self, cfg, model=wrap(cfg, model), feature_info=feature_info, **kwargs)
+        func(
+            self,
+            cfg,
+            model=wrap(cfg, model),
+            feature_info=feature_info,
+            **kwargs,
+        )
 
     return wrapper

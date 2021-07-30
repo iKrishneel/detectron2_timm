@@ -71,7 +71,9 @@ class Backbone(BB):
             h, w = self._in_shape[2:]
             k = int(math.sqrt((h * w) // output.shape[1]))
             self.feature_maps.append(
-                rearrange(output, 'b (h1 w1) c -> b c h1 w1', h1=h//k, w1=w//k)
+                rearrange(
+                    output, 'b (h1 w1) c -> b c h1 w1', h1=h // k, w1=w // k
+                )
             )
         else:
             self.feature_maps.append(output)
