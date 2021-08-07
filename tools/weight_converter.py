@@ -97,7 +97,6 @@ def xcit_models(weights, model_name: str) -> OrderedDict:
                     f'roi_heads.mask_head.mask_fcn{i}.{t}',
                 )
 
-                print(key, "       ", new_key, i, j)
             elif 'upsample' in key:
                 new_key = key.replace(
                     f'roi_head.mask_head.upsample.{t}',
@@ -115,7 +114,7 @@ def xcit_models(weights, model_name: str) -> OrderedDict:
 
         new_state_dict[new_key] = state_dict[key]
         # print(new_state_dict[new_key].dtype, state_dict[key].dtype, new_key)
-
+    print("Done remapping keys for model: ", model_name)
     return new_state_dict
 
 
@@ -130,7 +129,7 @@ def main(args):
 
     weights = torch.load(weights)
     if 'xcit' in name:
-        new_state_dict = xcit_models(weights, args.weight)
+        new_state_dict = xcit_models(weights, args.weights)
     else:
         raise ValueError('Unknown model')
 
