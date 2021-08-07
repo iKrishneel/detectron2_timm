@@ -127,7 +127,9 @@ def main(args):
     if not osp.isdir(log_dir):
         os.mkdir(log_dir)
 
-    weights = torch.load(weights)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    weights = torch.load(weights, map_location=torch.device(device))
+
     if 'xcit' in name:
         new_state_dict = xcit_models(weights, args.weights)
     else:
