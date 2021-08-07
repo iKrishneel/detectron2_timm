@@ -1,4 +1,4 @@
-# detectron2_timm
+# detectron2_timm  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/iKrishneel/detectron2_timm/blob/master/scripts/coco.ipynb?hl=en#scrollTo=c5cDMnZrqlrS)
 A Simple wrapper for binding the models in [timm](https://github.com/rwightman/pytorch-image-models) library into 
 [detectron2](https://github.com/facebookresearch/detectron2) backbone for training two-stage detectors using `detection2`. This simple library, does not require and changes to either `timm` models or `detectron2`. Whichever model is found in `timm.models.list_models()` is automatically binded to the `detectron2` backbone (including `FPN`).
 
