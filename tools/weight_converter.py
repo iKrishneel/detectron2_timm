@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 
-def xcit_models(weights) -> OrderedDict:
+def xcit_models(weights, model_name: str) -> OrderedDict:
 
     state_dict = weights['state_dict']
     new_state_dict = OrderedDict()
@@ -19,7 +19,9 @@ def xcit_models(weights) -> OrderedDict:
         if 'backbone' in key:
             new_key = 'backbone.bottom_up.model.model.' + key[9:]
             new_key = new_key.replace('pos_embeder', 'pos_embed')
-            new_key = new_key.replace('model.fpn1', 'block4')
+
+            blk_name = 'block4' if 'small' in model_name else 'block8'
+            new_key = new_key.replace('model.fpn1', blk_name)
 
         elif 'neck.lateral_convs' in key:
             x, y = 0, 0
@@ -128,7 +130,7 @@ def main(args):
 
     weights = torch.load(weights)
     if 'xcit' in name:
-        new_state_dict = xcit_models(weights)
+        new_state_dict = xcit_models(weights, args.weight)
     else:
         raise ValueError('Unknown model')
 
