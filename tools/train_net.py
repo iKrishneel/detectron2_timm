@@ -24,7 +24,13 @@ import torch
 import detectron2.utils.comm as comm
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.data import MetadataCatalog
-from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, hooks, launch
+from detectron2.engine import (
+    DefaultTrainer,
+    default_argument_parser,
+    default_setup,
+    hooks,
+    launch,
+)
 from detectron2.evaluation import (
     CityscapesInstanceEvaluator,
     CityscapesSemSegEvaluator,
@@ -70,9 +76,13 @@ class Trainer(DefaultTrainer):
                 )
             )
         if evaluator_type in ["coco", "coco_panoptic_seg"]:
-            evaluator_list.append(COCOEvaluator(dataset_name, output_dir=output_folder))
+            evaluator_list.append(
+                COCOEvaluator(dataset_name, output_dir=output_folder)
+            )
         if evaluator_type == "coco_panoptic_seg":
-            evaluator_list.append(COCOPanopticEvaluator(dataset_name, output_folder))
+            evaluator_list.append(
+                COCOPanopticEvaluator(dataset_name, output_folder)
+            )
         if evaluator_type == "cityscapes_instance":
             assert (
                 torch.cuda.device_count() >= comm.get_rank()
@@ -106,7 +116,9 @@ class Trainer(DefaultTrainer):
         model = GeneralizedRCNNWithTTA(cfg, model)
         evaluators = [
             cls.build_evaluator(
-                cfg, name, output_folder=os.path.join(cfg.OUTPUT_DIR, "inference_TTA")
+                cfg,
+                name,
+                output_folder=os.path.join(cfg.OUTPUT_DIR, "inference_TTA"),
             )
             for name in cfg.DATASETS.TEST
         ]
@@ -151,7 +163,11 @@ def main(args):
     trainer.resume_or_load(resume=args.resume)
     if cfg.TEST.AUG.ENABLED:
         trainer.register_hooks(
-            [hooks.EvalHook(0, lambda: trainer.test_with_TTA(cfg, trainer.model))]
+            [
+                hooks.EvalHook(
+                    0, lambda: trainer.test_with_TTA(cfg, trainer.model)
+                )
+            ]
         )
     return trainer.train()
 

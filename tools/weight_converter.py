@@ -24,10 +24,10 @@ def xcit_models(weights, model_name: str) -> OrderedDict:
             new_key = new_key.replace('model.fpn1', blk_name)
 
         elif 'neck.lateral_convs' in key:
-            x, y = 0, 0
+            x = 0
             for i, j in enumerate(np.arange(2, 6)):
                 if str(i) in key:
-                    x, y = i, j
+                    x = i
                     break
 
             t = 'weight' if 'weight' in key else 'bias'
@@ -37,10 +37,10 @@ def xcit_models(weights, model_name: str) -> OrderedDict:
             )
 
         elif 'neck.fpn_convs' in key:
-            x, y = 0, 0
+            x = 0
             for i, j in enumerate(np.arange(2, 6)):
                 if str(i) in key:
-                    x, y = i, j
+                    x = i
                     break
 
             t = 'weight' if 'weight' in key else 'bias'

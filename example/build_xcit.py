@@ -46,6 +46,7 @@ def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)
 
+    """
     cfg.MODEL.BACKBONE.NAME = 'build_xcit_small_12_p8_224_fpn_backbone'
     cfg.MODEL.BACKBONE.FREEZE_AT = 0
     cfg.MODEL.BACKBONE.CONFIG.PRETRAINED = False
@@ -68,12 +69,12 @@ def setup(args):
     # cfg.MODEL.ROI_HEADS.IN_FEATURES = ['p2', 'p3', 'p4', 'p5']
     # cfg.MODEL.ANCHOR_GENERATOR.SIZES = [[32], [64], [128], [256], [512]]
     # cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]]
-
+    """
     cfg.INPUT.FIXED_INPUT_SIZE = True
     cfg.INPUT.MAX_SIZE_TRAIN = 1024
     cfg.INPUT.MAX_SIZE_TEST = 1024
 
-    cfg.MODEL.DEVICE = 'cpu'
+    # cfg.MODEL.DEVICE = 'cpu'
 
     try:
         cfg.OUTPUT_DIR = args.output_dir
