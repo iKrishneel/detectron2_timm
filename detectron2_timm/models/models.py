@@ -19,13 +19,9 @@ def get_model_attrs(cfg: CfgNode) -> dict:
     if cfg.INPUT.FIXED_INPUT_SIZE:
         attrs.update(
             {
-                'img_size': (
-                    cfg.INPUT.MAX_SIZE_TRAIN,
-                    cfg.INPUT.MAX_SIZE_TRAIN,
-                ),
+                'img_size': utils.patch_size_mod2(cfg=cfg),
             }
         )
-
     return attrs
 
 

@@ -9,6 +9,7 @@ from difflib import get_close_matches
 import torch.nn as nn
 
 import timm.models as tmodels
+from detectron2.config import CfgNode
 
 
 _PREFIX: str = 'build_'
@@ -68,3 +69,11 @@ def load_yaml(path: str) -> dict:
 
 def get_attr(name: str):
     return getattr(tmodels, name)
+
+
+def patch_size_mod2(cfg: CfgNode) -> List[int]:
+    stride = max(cfg.MODEL.BACKBONE.CONFIG.STRIDES)
+    max_size = cfg.INPUT.MAX_SIZE_TRAIN
+    min_size = max(cfg.INPUT.MIN_SIZE_TRAIN)
+    assert stride > 0
+    return (max_size - (max_size % stride), min_size - (min_size % stride))

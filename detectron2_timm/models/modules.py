@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 import math
-from typing import List
 
-import torch
 import torch.nn as nn
 
 
@@ -113,9 +111,13 @@ class XCiT(Base):
         x, (Hp, Wp) = self.model.patch_embed(x)
 
         if self.model.use_pos_embed:
-            x = x + self.model.pos_embed(b, Hp, Wp).reshape(
-                b, -1, x.shape[1]
-            ).permute(0, 2, 1)
+            x = (
+                x
+                + self.model.pos_embed(b, Hp, Wp)
+                .reshape(b, -1, x.shape[1])
+                .permute(0, 2, 1)
+                .contiguous()
+            )
 
         x = self.model.pos_drop(x)
 
