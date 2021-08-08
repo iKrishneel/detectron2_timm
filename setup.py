@@ -11,7 +11,6 @@ except Exception:
     readme = str('')
 
 
-# write all package dependencies here
 install_requires = [
     'einops',
     'numpy',

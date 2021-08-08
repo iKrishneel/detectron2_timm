@@ -1,4 +1,4 @@
-_BASE_: "../base_xcit_fpn.yaml"
+_BASE_: "../base_fpn.yaml"
 MODEL:
   BACKBONE:
     CONFIG:
