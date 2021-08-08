@@ -3,6 +3,7 @@
 import math
 from typing import List
 
+import torch.nn as nn
 from einops import rearrange
 
 from detectron2.config import CfgNode
@@ -67,22 +68,29 @@ class Backbone(BB):
         return self.model.feature_res_adj(output)
 
     def forward_hook(self, module, input, output):
-        if len(output.shape) == 3:
+
+        post_output = self.model.post_forward(input, output)
+
+        if len(post_output.shape) == 3:
             h, w = self._in_shape[2:]
-            k = int(math.sqrt((h * w) // output.shape[1]))
+            k = int(math.sqrt((h * w) // post_output.shape[1]))
             self.feature_maps.append(
                 rearrange(
-                    output, 'b (h1 w1) c -> b c h1 w1', h1=h // k, w1=w // k
+                    post_output,
+                    'b (h1 w1) c -> b c h1 w1',
+                    h1=h // k,
+                    w1=w // k,
                 )
             )
         else:
-            self.feature_maps.append(output)
+            self.feature_maps.append(post_output)
 
     def break_model(self, model, model_cfg: CfgNode):
 
         layers = model_cfg.OUT_FEATURES
         strides = model_cfg.STRIDES
         remaps = model_cfg.REMAPS
+        channels = model_cfg.CHANNELS
 
         if not isinstance(layers, list):
             layers = [layers]
@@ -112,9 +120,14 @@ class Backbone(BB):
                 stage_name = layer
 
             self.out_features.append(stage_name)
-            self.channels[stage_name] = self.get_channels(module)
             self.strides[stage_name] = stride
             self._feature_remap[stage_name] = layer
+
+            self.channels[stage_name] = (
+                channels[i]
+                if len(channels) == len(strides)
+                else self.get_channels(module)
+            )
 
     def get_strides(self, module) -> int:
         stride = 1
@@ -122,14 +135,17 @@ class Backbone(BB):
         return stride
 
     def get_channels(self, module) -> int:
-        out_channels = 1
+        out_channels = None
         for m in module.modules():
             if len(list(m.children())) != 0:
                 continue
-            try:
+
+            if isinstance(m, nn.Conv2d):
                 out_channels = m.out_channels
-            except AttributeError:
-                pass
+            elif isinstance(m, nn.Linear):
+                out_channels = m.out_features
+
+        assert out_channels
         return out_channels
 
     def output_shape(self) -> dict:

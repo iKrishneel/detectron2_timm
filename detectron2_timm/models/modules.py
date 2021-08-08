@@ -2,12 +2,12 @@
 
 import math
 
+import torch
+from torch import Tensor
 import torch.nn as nn
 
 
-__all__ = [
-    'XCiT',
-]
+__all__ = ['XCiT', 'Swin']
 
 
 def wrap(cfg, model: nn.Module) -> nn.Module:
@@ -32,6 +32,9 @@ class Base(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+    def post_forward(self, input, output):
+        return output
 
     def feature_res_adj(self, x):
         return x
@@ -105,7 +108,7 @@ class XCiT(Base):
 
             setattr(self, remap, op)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         self._in_shape = x.shape
         b = x.shape[0]
         x, (Hp, Wp) = self.model.patch_embed(x)
@@ -131,3 +134,59 @@ class XCiT(Base):
             name: getattr(self, name)(features[name]) for name in features
         }
         return out_features
+
+
+class Swin(Base):
+
+    __name__ = 'swin'
+
+    def __init__(self, cfg, model: nn.Module):
+        super(Swin, self).__init__(cfg, model)
+
+        strides = self.cfg.MODEL.BACKBONE.CONFIG.STRIDES
+        remaps = self.cfg.MODEL.BACKBONE.CONFIG.REMAPS
+        if len(remaps) != len(strides):
+            remaps = self.cfg.MODEL.BACKBONE.OUT_FEATURES
+
+        assert len(remaps) <= len(model.layers)
+
+        for i, remap in enumerate(remaps):
+            blocks = model.layers[i].blocks
+            num_blocks = len(blocks) - 1
+            assert num_blocks > 0
+            num_features = blocks[num_blocks].mlp.fc2.out_features
+            self.add_module(remap, nn.LayerNorm(num_features))
+
+        self._remaps = remaps
+        self._block_counter = 0
+
+    def forward(self, x: Tensor) -> Tensor:
+
+        self._in_shape = x.shape
+        self._block_counter = 0
+
+        x = self.model.patch_embed(x)
+        if self.model.absolute_pos_embed is not None:
+            x = x + self.model.absolute_pos_embed
+        x = self.model.pos_drop(x)
+        x = self.model.layers(x)
+        x = self.model.norm(x)  # B L C
+        x = self.model.avgpool(x.transpose(1, 2))  # B C 1
+        x = torch.flatten(x, 1)
+        return x
+
+    def post_forward(self, input, output):
+        i = self._block_counter
+        assert self._block_counter < len(self._remaps)
+        layer = getattr(self, self._remaps[i])
+        assert layer
+
+        s = self.cfg.MODEL.BACKBONE.CONFIG.STRIDES[i]
+        b, _, h, w = self._in_shape
+        h, w = (h + 1) // s, (w + 1) // s
+
+        x = layer(output)
+        x = x.view(b, h, w, -1).permute(0, 3, 1, 2).contiguous()
+
+        self._block_counter += 1
+        return x

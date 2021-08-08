@@ -43,6 +43,22 @@ def remove_named_children(cfg, original_model) -> nn.Module:
     return original_model
 
 
+def replace_layers(cfg, original_model):
+
+    import importlib
+
+    layers = importlib.import_module('detectron2_timm.models.layers')
+
+    for replace in cfg.MODEL.BACKBONE.CONFIG.REPLACE_LAYERS:
+        assert isinstance(replace, (list, tuple))
+        if len(replace) == 0:
+            continue
+        layer = getattr(layers, replace[1])
+        original_model.add_module(replace[0], layer())
+
+    return original_model
+
+
 def find_model_config(model_cfgs: dict, model_name: str) -> dict:
     match = get_close_matches(model_name, model_cfgs.keys())[0]
     return model_cfgs[match]
