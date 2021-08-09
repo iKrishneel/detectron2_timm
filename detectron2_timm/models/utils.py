@@ -92,4 +92,4 @@ def patch_size_mod2(cfg: CfgNode) -> List[int]:
     max_size = cfg.INPUT.MAX_SIZE_TRAIN
     min_size = max(cfg.INPUT.MIN_SIZE_TRAIN)
     assert stride > 0
-    return (max_size - (max_size % stride), min_size - (min_size % stride))
+    return (min_size - (min_size % stride), max_size - (max_size % stride))
