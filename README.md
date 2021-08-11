@@ -2,6 +2,11 @@
 A Simple wrapper for binding the models in [timm](https://github.com/rwightman/pytorch-image-models) library into 
 [detectron2](https://github.com/facebookresearch/detectron2) backbone for training two-stage detectors using `detection2`. This simple library, does not require and changes to either `timm` models or `detectron2`. Whichever model is found in `timm.models.list_models()` is automatically binded to the `detectron2` backbone (including `FPN`).
 
+## Examples
+The following models are already tested.
+- [x] `xcit` &rarr; check the [xcit.ipynb](https://github.com/iKrishneel/detectron2_timm/blob/master/scripts/xcit.ipynb) which shows example of using this library with the [pretrained xcit models](https://github.com/facebookresearch/xcit/tree/master/detection) for evaluation on coco2017 dataset. 
+- [x] `swin` &rarr; check the [swin.ipynb](https://github.com/iKrishneel/detectron2_timm/blob/master/scripts/swin.ipynb) which shows example of using this library with the [pretrained swin models](https://github.com/SwinTransformer/Swin-Transformer-Object-Detection#mask-r-cnn) for evaluation on coco2017 dataset. 
+
 #### Configs
 The configuration of the binded backbone model from `timm` is specified in the extend [config](https://github.com/iKrishneel/detectron2_timm/blob/master/detectron2_timm/config/config.py). In the config you specify laters from which to extract the features, rename this feature extractor layers and also which layers to remove from the `timm` model. 
 
@@ -63,8 +68,5 @@ To test the `xcit` model
 $ python tools/train_net.py --config-file config/xcit/xcit_small_12_p8_224_fpn.yaml --num-gpus 4 --eval-only MODEL.WEIGHTS ./logs/mrcnn_xcit_small_12_p8.pth
 ```
 
-## Examples
-Checkout the [xcit.ipynb](https://github.com/iKrishneel/detectron2_timm/blob/master/scripts/xcit.ipynb) which shows example of using this library with the [pretrained xcit models](https://github.com/facebookresearch/xcit/tree/master/detection) for evaluation on coco2017 dataset. 
-
 ## :warning: Warning
-Only few models in `timm` (resnet, xcit) are tested so far. Other models might require some changes or fixes. 
+Only few models in `timm` (see example) are tested so far. Other models might require some changes or fixes. 
