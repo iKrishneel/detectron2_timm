@@ -69,12 +69,13 @@ def setup(args):
     # cfg.MODEL.ROI_HEADS.IN_FEATURES = ['p2', 'p3', 'p4', 'p5']
     # cfg.MODEL.ANCHOR_GENERATOR.SIZES = [[32], [64], [128], [256], [512]]
     # cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.5, 1.0, 2.0]]
-    """
+
     cfg.INPUT.FIXED_INPUT_SIZE = True
     cfg.INPUT.MAX_SIZE_TRAIN = 1024
     cfg.INPUT.MAX_SIZE_TEST = 1024
 
     # cfg.MODEL.DEVICE = 'cpu'
+    """
 
     try:
         cfg.OUTPUT_DIR = args.output_dir
@@ -109,6 +110,7 @@ def debug(args):
 
         m = build_model(cfg)
 
+        # s = [3, cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MAX_SIZE_TEST]
         x = [{'image': torch.randn(s)}]
 
         m = m.to('cpu')

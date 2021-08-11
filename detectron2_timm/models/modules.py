@@ -159,8 +159,20 @@ class Swin(Base):
 
         self._remaps = remaps
         self._block_counter = 0
+        self._actual_size = None
 
     def forward(self, x: Tensor) -> Tensor:
+
+        if self.training:
+            size = (
+                self.cfg.INPUT.MIN_SIZE_TRAIN[0],
+                self.cfg.INPUT.MAX_SIZE_TRAIN,
+            )
+        else:
+            size = (self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
+        _, _, h, w = x.shape
+        self._actual_size = x.shape[2:]
+        x = nn.functional.interpolate(x, size, mode='nearest')
 
         self._in_shape = x.shape
         self._block_counter = 0
@@ -170,8 +182,8 @@ class Swin(Base):
             x = x + self.model.absolute_pos_embed
         x = self.model.pos_drop(x)
         x = self.model.layers(x)
-        x = self.model.norm(x)  # B L C
-        x = self.model.avgpool(x.transpose(1, 2))  # B C 1
+        x = self.model.norm(x)
+        x = self.model.avgpool(x.transpose(1, 2))
         x = torch.flatten(x, 1)
         return x
 
@@ -188,5 +200,8 @@ class Swin(Base):
         x = layer(output)
         x = x.view(b, h, w, -1).permute(0, 3, 1, 2).contiguous()
 
+        y = x.shape
+        size = (int(self._actual_size[0] // s), int(self._actual_size[1] // s))
+        x = nn.functional.interpolate(x, size)
         self._block_counter += 1
         return x
