@@ -200,7 +200,6 @@ class Swin(Base):
         x = layer(output)
         x = x.view(b, h, w, -1).permute(0, 3, 1, 2).contiguous()
 
-        y = x.shape
         size = (int(self._actual_size[0] // s), int(self._actual_size[1] // s))
         x = nn.functional.interpolate(x, size)
         self._block_counter += 1
