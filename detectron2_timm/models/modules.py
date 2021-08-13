@@ -7,7 +7,7 @@ from torch import Tensor
 import torch.nn as nn
 
 
-__all__ = ['XCiT', 'Swin']
+__all__ = ['XCiT', 'Swin', 'Cait']
 
 
 def wrap(cfg, model: nn.Module) -> nn.Module:
@@ -96,6 +96,9 @@ class XCiT(Base):
         assert len(strides) == len(remaps)
 
         patch_size = self.model.patch_embed.patch_size
+        if isinstance(patch_size, tuple):
+            assert patch_size[0] == patch_size[1], 'Current support square patch'
+            patch_size = patch_size[0]
 
         for stride, remap in zip(strides, remaps):
             factor = patch_size / stride
@@ -203,4 +206,24 @@ class Swin(Base):
         size = (int(self._actual_size[0] // s), int(self._actual_size[1] // s))
         x = nn.functional.interpolate(x, size)
         self._block_counter += 1
+        return x
+
+
+class Cait(XCiT):
+
+    __name__ = 'cait'
+
+    def __init__(self, cfg, model: nn.Module):
+        super(Cait, self).__init__(cfg, model)
+
+    def forward(self, x):
+        self._in_shape = x.shape
+        x = self.model.patch_embed(x)
+
+        x = x + self.model.pos_embed
+        x = self.model.pos_drop(x)
+
+        for i, blk in enumerate(self.model.blocks):
+            x = blk(x)
+
         return x
