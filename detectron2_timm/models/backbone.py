@@ -167,6 +167,7 @@ class Backbone(BB):
         return cfg
 
     def _freeze_at(self, at: str) -> None:
+        # TODO: better to forward and freeze
         if at < 1:
             return
         assert (at - 1) <= len(

@@ -1,0 +1,59 @@
+_BASE_: "../base_fpn.yaml"
+INPUT:
+  FIXED_INPUT_SIZE: false
+MODEL:
+  BACKBONE:
+    CONFIG:
+      OUT_FEATURES:
+        - blocks.2
+        - blocks.3
+        - blocks.5
+        - blocks.6
+      PRETRAINED: true
+      REMAPS:
+        - block1
+        - block2
+        - block3
+        - block4
+      REMOVE_LAYERS:
+        - conv_head
+        - bn2
+        - act2
+        - global_pool
+        - classifier
+      STRIDES:
+        - 4
+        - 8
+        - 16
+        - 32
+      CHANNELS:
+        - 48
+        - 80
+        - 176
+        - 304
+    FREEZE_AT: 0
+    NAME: "build_efficientnetv2_m_fpn_backbone"
+  DEVICE: cuda
+  FPN:
+    FUSE_TYPE: sum
+    IN_FEATURES:
+      - block1
+      - block2
+      - block3
+      - block4
+    NORM: ''
+    OUT_CHANNELS: 256
+OUTPUT_DIR: "../logs/efficientnetv2_m_fpn/"
+SOLVER:
+  BASE_LR: 0.02
+  BIAS_LR_FACTOR: 1.0
+  CHECKPOINT_PERIOD: 10000
+  IMS_PER_BATCH: 16
+  MAX_ITER: 90000
+  STEPS:
+    - 60000
+    - 80000
+  WARMUP_FACTOR: 0.1
+  WARMUP_ITERS: 1000
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
