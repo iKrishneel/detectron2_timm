@@ -31,7 +31,6 @@ class Backbone(BB):
         self._feature_remap = {}
         self._in_shape = None
 
-        freeze_at = cfg.MODEL.BACKBONE.FREEZE_AT
         model_config = cfg.MODEL.BACKBONE.CONFIG
         assert model_config
 
@@ -44,8 +43,6 @@ class Backbone(BB):
         self.parse_model_config(model.model, model_config)
         self.model = model
         self.model_config = model_config
-
-        self._freeze_at(at=freeze_at)
 
     def parse_model_config(self, model, model_config):
 
@@ -91,6 +88,7 @@ class Backbone(BB):
         strides = model_cfg.STRIDES
         remaps = model_cfg.REMAPS
         channels = model_cfg.CHANNELS
+        freeze_layers = set(model_cfg.FREEZE_LAYERS)
 
         if not isinstance(layers, list):
             layers = [layers]
@@ -106,6 +104,9 @@ class Backbone(BB):
                 'REMAP can either be empty or same size as OUT_FEATURES'
             )
 
+        def freezeit(m):
+            m.requires_grad_(False)
+
         for i, (layer, stride) in enumerate(zip(layers, strides)):
             splited = layer.split('.')
             module = model
@@ -119,6 +120,10 @@ class Backbone(BB):
             except IndexError:
                 stage_name = layer
 
+            if stage_name in freeze_layers:
+                freeze_layers.remove(stage_name)
+                freezeit(module)
+
             self.out_features.append(stage_name)
             self.strides[stage_name] = stride
             self._feature_remap[stage_name] = layer
@@ -128,6 +133,11 @@ class Backbone(BB):
                 if len(channels) == len(strides)
                 else self.get_channels(module)
             )
+
+        # freeze the remaining
+        for layer in freeze_layers:
+            module = getattr(model, layer)
+            freezeit(module)
 
     def get_strides(self, module) -> int:
         stride = 1
@@ -165,18 +175,3 @@ class Backbone(BB):
             cfg.OUT_FEATURES.append(feature_info['module'])
             cfg.STRIDES.append(feature_info['reduction'])
         return cfg
-
-    def _freeze_at(self, at: str) -> None:
-        # TODO: better to forward and freeze
-        if at < 1:
-            return
-        assert (at - 1) <= len(
-            self.out_features
-        ), f'Freeze at: {at}, is outside the lenght of {self.out_features}'
-
-        freeze_layer = self._feature_remap[self.out_features[at - 1]]
-        for name, feature in self.model.named_children():
-            for params in feature.parameters():
-                params.requires_grad = False
-            if name == freeze_layer:
-                break

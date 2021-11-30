@@ -28,7 +28,11 @@ MODEL:
         - 192
         - 384
         - 512
-    FREEZE_AT: 2
+      # FREEZE_AT: 2
+      FREEZE_LAYERS:
+        - stem
+        - stage1
+        - stage2
     NAME: "build_regnetz_e8_fpn_backbone"
   DEVICE: cuda
   FPN:

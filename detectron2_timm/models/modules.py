@@ -97,7 +97,9 @@ class XCiT(Base):
 
         patch_size = self.model.patch_embed.patch_size
         if isinstance(patch_size, tuple):
-            assert patch_size[0] == patch_size[1], 'Current support square patch'
+            assert (
+                patch_size[0] == patch_size[1]
+            ), 'Current support square patch'
             patch_size = patch_size[0]
 
         for stride, remap in zip(strides, remaps):

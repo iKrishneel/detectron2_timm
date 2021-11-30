@@ -19,6 +19,9 @@ _C.MODEL.BACKBONE.CONFIG.PRETRAINED = False  # init with pretrained model
 _C.MODEL.BACKBONE.CONFIG.CHANNELS = []
 _C.MODEL.BACKBONE.CONFIG.REPLACE_LAYERS = [[]]
 
+# for freezing certain layers with name
+_C.MODEL.BACKBONE.CONFIG.FREEZE_LAYERS = []
+
 _C.INPUT.FIXED_INPUT_SIZE = True
 
 
