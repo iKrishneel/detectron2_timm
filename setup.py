@@ -17,11 +17,11 @@ install_requires = [
     'matplotlib',
     'opencv-python',
     'pillow',
-    'torch',
+    'torch >= 1.8',
     'torchvision',
     'tqdm',
     'pytest',
-    'timm',
+    'timm >= 0.4.13',
 ]
 
 setup(
