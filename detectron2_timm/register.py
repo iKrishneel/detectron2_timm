@@ -42,7 +42,7 @@ def build_backbone_functions() -> List:
 def hook(model_name: str, local_s=None, **kwargs: dict) -> None:
     build_func = kwargs.get('build_func', None)
     assert build_func and callable(build_func)
-    assert model_name in list_models()
+    assert model_name in list_models() or model_name in models.list_models()
 
     func_name = utils.get_func_name(build_func, model_name)
     if local_s is not None:

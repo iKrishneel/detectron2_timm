@@ -11,6 +11,8 @@ import torch.nn as nn
 import timm.models as tmodels
 from detectron2.config import CfgNode
 
+from . import models
+
 
 _PREFIX: str = 'build_'
 _DETECTRON2: str = 'detectron2'
@@ -21,12 +23,12 @@ def get_models(default_cfgs: dict, name: str = None) -> List[str]:
     if name is not None:
         try:
             assert name in default_cfgs
-            return getattr(tmodels, name)
+            return get_attr(name)
         except AttributeError:
             raise ValueError(f'Model name {name} not found')
 
     return {
-        model_name: getattr(tmodels, model_name)
+        model_name: get_attr(model_name)
         for model_name in default_cfgs.keys()
     }
 
@@ -84,7 +86,11 @@ def load_yaml(path: str) -> dict:
 
 
 def get_attr(name: str):
-    return getattr(tmodels, name)
+    try:
+        return getattr(tmodels, name)
+    except AttributeError:
+        pass
+    return getattr(models, name)
 
 
 def patch_size_mod2(cfg: CfgNode) -> List[int]:
