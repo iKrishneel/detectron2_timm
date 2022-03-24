@@ -1,0 +1,53 @@
+_BASE_: "../base_fpn.yaml"
+INPUT:
+  FIXED_INPUT_SIZE: false
+MODEL:
+  PIXEL_MEAN: [127.0, 127.0, 127.0]
+  PIXEL_STD: [127.0, 127.0, 127.0]
+  BACKBONE:
+    CONFIG:
+      OUT_FEATURES:
+        - blocks.3
+        - blocks.5
+        - blocks.7
+        - blocks.11
+      PRETRAINED: true
+      REMAPS:
+        - block4
+        - block6
+        - block8
+        - block12
+      REMOVE_LAYERS:
+        - norm
+        - pre_logits
+        - head
+      STRIDES:
+        - 4
+        - 8
+        - 16
+        - 32
+    NAME: "build_vit_base_patch8_224_fpn_backbone"
+  DEVICE: cuda
+  FPN:
+    FUSE_TYPE: sum
+    IN_FEATURES:
+      - block4
+      - block6
+      - block8
+      - block12
+    NORM: ''
+    OUT_CHANNELS: 256
+OUTPUT_DIR: "../logs/vit/vit_base_p8_fpn"
+SOLVER:
+  BASE_LR: 0.02
+  BIAS_LR_FACTOR: 1.0
+  CHECKPOINT_PERIOD: 10000
+  IMS_PER_BATCH: 16
+  MAX_ITER: 90000
+  STEPS:
+    - 60000
+    - 80000
+  WARMUP_FACTOR: 0.1
+  WARMUP_ITERS: 1000
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
