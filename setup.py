@@ -21,8 +21,10 @@ install_requires = [
     'torchvision',
     'tqdm',
     'pytest',
-    'timm >= 0.4.13',
+    'timm @ git+git://github.com/rwightman/pytorch-image-models@master#egg=timm'
 ]
+
+
 
 setup(
     name='detectron2_timm',

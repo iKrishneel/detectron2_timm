@@ -45,16 +45,14 @@ def remove_named_children(cfg, original_model) -> nn.Module:
 
 def replace_layers(cfg, original_model):
 
-    import importlib
-
-    layers = importlib.import_module('detectron2_timm.models.layers')
+    from detectron2_timm.layers import LAYER_REGISTRY
 
     for replace in cfg.MODEL.BACKBONE.CONFIG.REPLACE_LAYERS:
         assert isinstance(replace, (list, tuple))
         if len(replace) == 0:
             continue
-        layer = getattr(layers, replace[1])
-        original_model.add_module(replace[0], layer())
+        layer = LAYER_REGISTRY.get(replace[1])
+        original_model.add_module(replace[0], layer(cfg))
 
     return original_model
 
