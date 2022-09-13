@@ -5,3 +5,5 @@ __pycache__/*
 logs/*
 *.ipynb_checkpoints
 output*
+*.pth
+*.pt

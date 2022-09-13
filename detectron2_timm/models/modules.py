@@ -188,7 +188,7 @@ class Swin(Base):
         x = self.model.pos_drop(x)
         x = self.model.layers(x)
         x = self.model.norm(x)
-        x = self.model.avgpool(x.transpose(1, 2))
+        # x = self.model.avgpool(x.transpose(1, 2))
         x = torch.flatten(x, 1)
         return x
 
