@@ -3,7 +3,7 @@
 import os.path as osp
 import yaml
 
-from typing import List
+from typing import List, Dict, Any
 from difflib import get_close_matches
 
 import torch.nn as nn
@@ -17,17 +17,18 @@ _DETECTRON2: str = 'detectron2'
 _SUFFIX: str = '_backbone'
 
 
-def get_models(default_cfgs: dict, name: str = None) -> List[str]:
+def get_models(default_cfgs: dict, name: str = None) -> Dict[str, Any]:
     if name is not None:
         try:
             assert name in default_cfgs
             return getattr(tmodels, name)
         except AttributeError:
             raise ValueError(f'Model name {name} not found')
-
+    
     return {
         model_name: getattr(tmodels, model_name)
         for model_name in default_cfgs.keys()
+        if getattr(tmodels, model_name, None)
     }
 
 
