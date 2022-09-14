@@ -21,7 +21,7 @@ install_requires = [
     'torchvision',
     'tqdm',
     'pytest',
-    'timm @ git+git://github.com/rwightman/pytorch-image-models@master#egg=timm'
+    'timm >= 0.6'
 ]
 
 
