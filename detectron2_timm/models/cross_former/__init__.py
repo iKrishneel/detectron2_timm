@@ -3,15 +3,15 @@
 from .crossformer import CrossFormer  # NOQA: F401
 
 
-__all__ = [
-    'cross_former_s',
-    'cross_former_b'
-]
+__all__ = ['cross_former_s', 'cross_former_b']
 
 
 def cross_former_s(**kwargs):
     return CrossFormer(
-        img_size=[1280, 800],  # This is only used to compute the FLOPs under the give image size
+        img_size=[
+            1280,
+            800,
+        ],  # This is only used to compute the FLOPs under the give image size
         patch_size=[4, 8, 16, 32],
         in_chans=3,
         num_classes=1000,
@@ -27,7 +27,7 @@ def cross_former_s(**kwargs):
         drop_path_rate=0.2,
         patch_norm=True,
         use_checkpoint=False,
-        merge_size=[[2, 4], [2, 4], [2, 4]]
+        merge_size=[[2, 4], [2, 4], [2, 4]],
     )
 
 
@@ -49,5 +49,5 @@ def cross_former_b(**kwargs):
         drop_path_rate=0.3,
         patch_norm=True,
         use_checkpoint=False,
-        merge_size=[[2, 4], [2, 4], [2, 4]]
+        merge_size=[[2, 4], [2, 4], [2, 4]],
     )

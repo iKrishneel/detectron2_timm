@@ -62,17 +62,9 @@ class XCiT(Base):
         modules = []
         for i in range(num_layer, stop, -1):
             if i == stop + 1:
-                modules.append(
-                    nn.ConvTranspose2d(
-                        embed_dim, embed_dim, kernel_size=2, stride=2
-                    )
-                )
+                modules.append(nn.ConvTranspose2d(embed_dim, embed_dim, kernel_size=2, stride=2))
             else:
-                modules.append(
-                    nn.ConvTranspose2d(
-                        embed_dim, embed_dim, kernel_size=2, stride=2
-                    )
-                )
+                modules.append(nn.ConvTranspose2d(embed_dim, embed_dim, kernel_size=2, stride=2))
                 modules.append(
                     nn.SyncBatchNorm(embed_dim),
                 )
@@ -97,9 +89,7 @@ class XCiT(Base):
 
         patch_size = self.model.patch_embed.patch_size
         if isinstance(patch_size, tuple):
-            assert (
-                patch_size[0] == patch_size[1]
-            ), 'Current support square patch'
+            assert patch_size[0] == patch_size[1], 'Current support square patch'
             patch_size = patch_size[0]
 
         for stride, remap in zip(strides, remaps):
@@ -119,13 +109,7 @@ class XCiT(Base):
         x, (Hp, Wp) = self.model.patch_embed(x)
 
         if self.model.use_pos_embed:
-            x = (
-                x
-                + self.model.pos_embed(b, Hp, Wp)
-                .reshape(b, -1, x.shape[1])
-                .permute(0, 2, 1)
-                .contiguous()
-            )
+            x = x + self.model.pos_embed(b, Hp, Wp).reshape(b, -1, x.shape[1]).permute(0, 2, 1).contiguous()
 
         x = self.model.pos_drop(x)
 
@@ -135,9 +119,7 @@ class XCiT(Base):
 
     def feature_res_adj(self, features: dict) -> dict:
         assert self._in_shape
-        out_features = {
-            name: getattr(self, name)(features[name]) for name in features
-        }
+        out_features = {name: getattr(self, name)(features[name]) for name in features}
         return out_features
 
 

@@ -11,7 +11,4 @@ from .cross_former import cross_former_s, cross_former_b  # NOQA: F401
 
 
 def list_models() -> List[str]:
-    return [
-        'cross_former_s',
-        'cross_former_b'
-    ]
+    return ['cross_former_s', 'cross_former_b']

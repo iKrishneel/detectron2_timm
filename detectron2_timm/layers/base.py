@@ -9,6 +9,5 @@ LAYER_REGISTRY.__doc__ = """Registry for custom layers"""
 
 
 class LayerBase(nn.Module):
-
     def __init__(self, *args, **kwargs):
         super(LayerBase, self).__init__()

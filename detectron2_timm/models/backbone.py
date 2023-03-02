@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import math
-from typing import List
+from typing import Dict, List
 
+import torch
 import torch.nn as nn
 from einops import rearrange
 
@@ -36,35 +37,31 @@ class Backbone(BB):
 
         if len(model_config.OUT_FEATURES) == 0:
             logger.info('Using default feature info')
-            model_config = self.config_from_feature_info(
-                model_config, kwargs.get('feature_info')
-            )
+            model_config = self.config_from_feature_info(model_config, kwargs.get('feature_info'))
 
         self.parse_model_config(model.model, model_config)
         self.model = model
         self.model_config = model_config
 
-    def parse_model_config(self, model, model_config):
-
+    def parse_model_config(self, model, model_config) -> None:
         model_config.OUT_FEATURES
         self.break_model(model, model_config)
 
+        # self._replace_non_trainable_batchnorm(model)
+
         # TODO: create new layers
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         self._in_shape = x.shape
         self.feature_maps = []
         x = self.model(x)
 
         assert len(self.feature_maps) == len(self.channels)
 
-        output = {
-            stage: fmap
-            for fmap, stage in zip(self.feature_maps, self.out_features)
-        }
+        output = {stage: fmap for fmap, stage in zip(self.feature_maps, self.out_features)}
         return self.model.feature_res_adj(output)
 
-    def forward_hook(self, module, input, output):
+    def forward_hook(self, module, input, output) -> None:
 
         post_output = self.model.post_forward(input, output)
 
@@ -82,8 +79,7 @@ class Backbone(BB):
         else:
             self.feature_maps.append(post_output)
 
-    def break_model(self, model, model_cfg: CfgNode):
-
+    def break_model(self, model, model_cfg: CfgNode) -> None:
         layers = model_cfg.OUT_FEATURES
         strides = model_cfg.STRIDES
         remaps = model_cfg.REMAPS
@@ -95,14 +91,10 @@ class Backbone(BB):
         if not isinstance(strides, list):
             strides = [strides]
 
-        assert len(layers) > 0 and len(layers) == len(
-            strides
-        ), 'STRIDES and OUT_FEATURES must be same size and > 0'
+        assert len(layers) > 0 and len(layers) == len(strides), 'STRIDES and OUT_FEATURES must be same size and > 0'
 
         if len(remaps) > 0 and len(layers) != len(remaps):
-            raise ValueError(
-                'REMAP can either be empty or same size as OUT_FEATURES'
-            )
+            raise ValueError('REMAP can either be empty or same size as OUT_FEATURES')
 
         def freezeit(m):
             m.requires_grad_(False)
@@ -128,11 +120,7 @@ class Backbone(BB):
             self.strides[stage_name] = stride
             self._feature_remap[stage_name] = layer
 
-            self.channels[stage_name] = (
-                channels[i]
-                if len(channels) == len(strides)
-                else self.get_channels(module)
-            )
+            self.channels[stage_name] = channels[i] if len(channels) == len(strides) else self.get_channels(module)
 
         # freeze the remaining
         for layer in freeze_layers:
@@ -158,20 +146,30 @@ class Backbone(BB):
         assert out_channels
         return out_channels
 
-    def output_shape(self) -> dict:
-        return {
-            name: ShapeSpec(
-                channels=self.channels[name], stride=self.strides[name]
-            )
-            for name in self.out_features
-        }
+    def output_shape(self) -> Dict[str, ShapeSpec]:
+        return {name: ShapeSpec(channels=self.channels[name], stride=self.strides[name]) for name in self.out_features}
 
-    def config_from_feature_info(
-        self, cfg, feature_infos: List[dict]
-    ) -> CfgNode:
+    def config_from_feature_info(self, cfg, feature_infos: List[dict]) -> CfgNode:
         assert len(feature_infos) > 0
 
         for feature_info in feature_infos:
             cfg.OUT_FEATURES.append(feature_info['module'])
             cfg.STRIDES.append(feature_info['reduction'])
         return cfg
+
+    def _replace_non_trainable_batchnorm(self, model: nn.Module) -> nn.Module:
+        from torchvision.ops import FrozenBatchNorm2d
+
+        for name, module in model.named_modules():
+            if isinstance(module, nn.BatchNorm2d):
+                requires_grad = False
+                for param in module.parameters():
+                    requires_grad |= param.requires_grad
+
+                if not requires_grad:
+                    setattr(
+                        model,
+                        name,
+                        FrozenBatchNorm2d(num_features=module.num_features),
+                    )
+        return model

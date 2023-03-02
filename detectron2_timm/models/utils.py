@@ -24,7 +24,7 @@ def get_models(default_cfgs: dict, name: str = None) -> Dict[str, Any]:
             return getattr(tmodels, name)
         except AttributeError:
             raise ValueError(f'Model name {name} not found')
-    
+
     return {
         model_name: getattr(tmodels, model_name)
         for model_name in default_cfgs.keys()

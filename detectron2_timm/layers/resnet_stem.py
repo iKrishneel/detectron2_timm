@@ -23,7 +23,7 @@ class ResNetStem(LayerBase):
                 nn.ReLU(inplace=True),
                 nn.Conv2d(32, 64, 3, stride=1, padding=1, bias=False),
                 nn.BatchNorm2d(64),
-                nn.ReLU(inplace=True),                
+                nn.ReLU(inplace=True),
             ]
         )
 

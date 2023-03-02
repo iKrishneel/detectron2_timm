@@ -18,9 +18,7 @@ def remove_layers(func):
         assert model is not None
         try:
             feature_info = [
-                info
-                for info in model.feature_info
-                if info['module'] not in cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS
+                info for info in model.feature_info if info['module'] not in cfg.MODEL.BACKBONE.CONFIG.REMOVE_LAYERS
             ]
         except AttributeError:
             feature_info = None

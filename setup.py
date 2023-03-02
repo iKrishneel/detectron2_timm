@@ -21,9 +21,8 @@ install_requires = [
     'torchvision',
     'tqdm',
     'pytest',
-    'timm >= 0.6'
+    'timm >= 0.6',
 ]
-
 
 
 setup(

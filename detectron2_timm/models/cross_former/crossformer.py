@@ -111,9 +111,7 @@ class Attention(nn.Module):
         self.scale = qk_scale or head_dim ** -0.5
         self.position_bias = position_bias
         if self.position_bias:
-            self.pos = DynamicPosBias(
-                self.dim // 4, self.num_heads, residual=False
-            )
+            self.pos = DynamicPosBias(self.dim // 4, self.num_heads, residual=False)
 
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -131,12 +129,7 @@ class Attention(nn.Module):
         group_size = (H, W)
         B_, N, C = x.shape
         assert H * W == N
-        qkv = (
-            self.qkv(x)
-            .reshape(B_, N, 3, self.num_heads, C // self.num_heads)
-            .permute(2, 0, 3, 1, 4)
-            .contiguous()
-        )
+        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4).contiguous()
         q, k, v = (
             qkv[0],
             qkv[1],
@@ -148,33 +141,19 @@ class Attention(nn.Module):
 
         if self.position_bias:
             # generate mother-set
-            position_bias_h = torch.arange(
-                1 - group_size[0], group_size[0], device=attn.device
-            )
-            position_bias_w = torch.arange(
-                1 - group_size[1], group_size[1], device=attn.device
-            )
-            biases = torch.stack(
-                torch.meshgrid([position_bias_h, position_bias_w])
-            )  # 2, 2Gh-1, 2W2-1
+            position_bias_h = torch.arange(1 - group_size[0], group_size[0], device=attn.device)
+            position_bias_w = torch.arange(1 - group_size[1], group_size[1], device=attn.device)
+            biases = torch.stack(torch.meshgrid([position_bias_h, position_bias_w]))  # 2, 2Gh-1, 2W2-1
             biases = biases.flatten(1).transpose(0, 1).contiguous().float()
 
             # get pair-wise relative position index for each token inside the window
             coords_h = torch.arange(group_size[0], device=attn.device)
             coords_w = torch.arange(group_size[1], device=attn.device)
-            coords = torch.stack(
-                torch.meshgrid([coords_h, coords_w])
-            )  # 2, Gh, Gw
+            coords = torch.stack(torch.meshgrid([coords_h, coords_w]))  # 2, Gh, Gw
             coords_flatten = torch.flatten(coords, 1)  # 2, Gh*Gw
-            relative_coords = (
-                coords_flatten[:, :, None] - coords_flatten[:, None, :]
-            )  # 2, Gh*Gw, Gh*Gw
-            relative_coords = relative_coords.permute(
-                1, 2, 0
-            ).contiguous()  # Gh*Gw, Gh*Gw, 2
-            relative_coords[:, :, 0] += (
-                group_size[0] - 1
-            )  # shift to start from 0
+            relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  # 2, Gh*Gw, Gh*Gw
+            relative_coords = relative_coords.permute(1, 2, 0).contiguous()  # Gh*Gw, Gh*Gw, 2
+            relative_coords[:, :, 0] += group_size[0] - 1  # shift to start from 0
             relative_coords[:, :, 1] += group_size[1] - 1
             relative_coords[:, :, 0] *= 2 * group_size[1] - 1
             relative_position_index = relative_coords.sum(-1)  # Gh*Gw, Gh*Gw
@@ -184,16 +163,12 @@ class Attention(nn.Module):
             relative_position_bias = pos[relative_position_index.view(-1)].view(
                 group_size[0] * group_size[1], group_size[0] * group_size[1], -1
             )  # Gh*Gw,Gh*Gw,nH
-            relative_position_bias = relative_position_bias.permute(
-                2, 0, 1
-            ).contiguous()  # nH, Gh*Gw, Gh*Gw
+            relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Gh*Gw, Gh*Gw
             attn = attn + relative_position_bias.unsqueeze(0)
 
         if mask is not None:
             nG = mask.shape[0]
-            attn = attn.view(
-                B_ // nG, nG, self.num_heads, N, N
-            ) + mask.unsqueeze(1).unsqueeze(
+            attn = attn.view(B_ // nG, nG, self.num_heads, N, N) + mask.unsqueeze(1).unsqueeze(
                 0
             )  # (B, nG, nHead, N, N)
             attn = attn.view(-1, self.num_heads, N, N)
@@ -289,9 +264,7 @@ class CrossFormerBlock(nn.Module):
             position_bias=True,
         )
 
-        self.drop_path = (
-            DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
-        )
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(
@@ -331,20 +304,12 @@ class CrossFormerBlock(nn.Module):
         # group embeddings and generate attn_mask
         if self.lsda_flag == 0:  # SDA
             G = Gh = Gw = self.group_size
-            x = (
-                x.reshape(B, Hp // G, G, Wp // G, G, C)
-                .permute(0, 1, 3, 2, 4, 5)
-                .contiguous()
-            )
+            x = x.reshape(B, Hp // G, G, Wp // G, G, C).permute(0, 1, 3, 2, 4, 5).contiguous()
             x = x.reshape(B * Hp * Wp // G ** 2, G ** 2, C)
             nG = Hp * Wp // G ** 2
             # attn_mask
             if pad_r > 0 or pad_b > 0:
-                mask = (
-                    mask.reshape(1, Hp // G, G, Wp // G, G, 1)
-                    .permute(0, 1, 3, 2, 4, 5)
-                    .contiguous()
-                )
+                mask = mask.reshape(1, Hp // G, G, Wp // G, G, 1).permute(0, 1, 3, 2, 4, 5).contiguous()
                 mask = mask.reshape(nG, 1, G * G)
                 attn_mask = torch.zeros((nG, G * G, G * G), device=x.device)
                 attn_mask = attn_mask.masked_fill(mask < 0, NEG_INF)
@@ -352,20 +317,12 @@ class CrossFormerBlock(nn.Module):
                 attn_mask = None
         else:  # LDA
             I, Gh, Gw = self.interval, Hp // self.interval, Wp // self.interval
-            x = (
-                x.reshape(B, Gh, I, Gw, I, C)
-                .permute(0, 2, 4, 1, 3, 5)
-                .contiguous()
-            )
+            x = x.reshape(B, Gh, I, Gw, I, C).permute(0, 2, 4, 1, 3, 5).contiguous()
             x = x.reshape(B * I * I, Gh * Gw, C)
             nG = I ** 2
             # attn_mask
             if pad_r > 0 or pad_b > 0:
-                mask = (
-                    mask.reshape(1, Gh, I, Gw, I, 1)
-                    .permute(0, 2, 4, 1, 3, 5)
-                    .contiguous()
-                )
+                mask = mask.reshape(1, Gh, I, Gw, I, 1).permute(0, 2, 4, 1, 3, 5).contiguous()
                 mask = mask.reshape(nG, 1, Gh * Gw)
                 attn_mask = torch.zeros((nG, Gh * Gw, Gh * Gw), device=x.device)
                 attn_mask = attn_mask.masked_fill(mask < 0, NEG_INF)
@@ -378,16 +335,10 @@ class CrossFormerBlock(nn.Module):
         # ungroup embeddings
         if self.lsda_flag == 0:
             x = (
-                x.reshape(B, Hp // G, Wp // G, G, G, C)
-                .permute(0, 1, 3, 2, 4, 5)
-                .contiguous()
+                x.reshape(B, Hp // G, Wp // G, G, G, C).permute(0, 1, 3, 2, 4, 5).contiguous()
             )  # B, Hp//G, G, Wp//G, G, C
         else:
-            x = (
-                x.reshape(B, I, I, Gh, Gw, C)
-                .permute(0, 3, 1, 4, 2, 5)
-                .contiguous()
-            )  # B, Gh, I, Gw, I, C
+            x = x.reshape(B, I, I, Gh, Gw, C).permute(0, 3, 1, 4, 2, 5).contiguous()  # B, Gh, I, Gw, I, C
         x = x.reshape(B, Hp, Wp, C)
 
         # remove padding
@@ -460,11 +411,7 @@ class PatchMerging(nn.Module):
                 out_dim = 2 * dim // 2 ** (i + 1)
             stride = 2
             padding = (ps - stride) // 2
-            self.reductions.append(
-                nn.Conv2d(
-                    dim, out_dim, kernel_size=ps, stride=stride, padding=padding
-                )
-            )
+            self.reductions.append(nn.Conv2d(dim, out_dim, kernel_size=ps, stride=stride, padding=padding))
 
     def forward(self, x, H, W):
         """
@@ -479,9 +426,7 @@ class PatchMerging(nn.Module):
 
         xs = []
         for i in range(len(self.reductions)):
-            tmp_x = (
-                self.reductions[i](x).flatten(2).transpose(1, 2).contiguous()
-            )
+            tmp_x = self.reductions[i](x).flatten(2).transpose(1, 2).contiguous()
             xs.append(tmp_x)
         x = torch.cat(xs, dim=2)
         return x
@@ -564,9 +509,7 @@ class Stage(nn.Module):
                     qk_scale=qk_scale,
                     drop=drop,
                     attn_drop=attn_drop,
-                    drop_path=drop_path[i]
-                    if isinstance(drop_path, list)
-                    else drop_path,
+                    drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path,
                     norm_layer=norm_layer,
                     num_patch_size=num_patch_size,
                 )
@@ -686,13 +629,7 @@ class PatchEmbed(nn.Module):
                 dim = self.embed_dim // 2 ** i
             else:
                 dim = self.embed_dim // 2 ** (i + 1)
-            flops += (
-                Ho
-                * Wo
-                * dim
-                * self.in_chans
-                * (self.patch_size[i] * self.patch_size[i])
-            )
+            flops += Ho * Wo * dim * self.in_chans * (self.patch_size[i] * self.patch_size[i])
         if self.norm is not None:
             flops += Ho * Wo * self.embed_dim
         return flops
@@ -764,25 +701,19 @@ class CrossFormer(nn.Module):
             norm_layer=norm_layer if self.patch_norm else None,
         )
         patches_resolution = self.patch_embed.patches_resolution
-        self.patches_resolution = (
-            patches_resolution  # [H//4, W//4] of original image size
-        )
+        self.patches_resolution = patches_resolution  # [H//4, W//4] of original image size
 
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         # stochastic depth
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))
-        ]  # stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
 
         # build layers
         self.layers = nn.ModuleList()
 
         num_patch_sizes = [len(patch_size)] + [len(m) for m in merge_size]
         for i_layer in range(self.num_layers):
-            patch_size_end = (
-                merge_size[i_layer] if i_layer < self.num_layers - 1 else None
-            )
+            patch_size_end = merge_size[i_layer] if i_layer < self.num_layers - 1 else None
             num_patch_size = num_patch_sizes[i_layer]
             layer = Stage(
                 dim=int(embed_dim * 2 ** i_layer),
@@ -799,13 +730,9 @@ class CrossFormer(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop_rate,
                 attn_drop=attn_drop_rate,
-                drop_path=dpr[
-                    sum(depths[:i_layer]) : sum(depths[: i_layer + 1])
-                ],
+                drop_path=dpr[sum(depths[:i_layer]) : sum(depths[: i_layer + 1])],
                 norm_layer=norm_layer,
-                downsample=PatchMerging
-                if (i_layer < self.num_layers - 1)
-                else None,
+                downsample=PatchMerging if (i_layer < self.num_layers - 1) else None,
                 use_checkpoint=use_checkpoint,
                 patch_size_end=patch_size_end,
                 num_patch_size=num_patch_size,

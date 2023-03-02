@@ -37,17 +37,17 @@ def introspect(features, image, save_dir: str = None):
 
 def test_one(image, predictor, metadata, threshold=0.5):
     visualizer = Visualizer(image, metadata=metadata, scale=1.0)
-    
+
     r = predictor(image)
     instances = r['instances'].to('cpu').get_fields()
-   
+
     scores = instances['scores'].numpy()
     remove_indices = scores < threshold
-    
+
     scores = np.delete(scores, remove_indices, 0)
     bboxes = np.delete(instances['pred_boxes'].tensor.numpy(), remove_indices, 0)
     labels = np.delete(instances['pred_classes'].numpy(), remove_indices, 0)
-    
+
     try:
         masks = np.delete(instances['pred_masks'].numpy(), remove_indices, 0)
     except KeyError:
@@ -55,7 +55,7 @@ def test_one(image, predictor, metadata, threshold=0.5):
 
     labels = np.array(metadata.get('thing_classes'))[labels]
     viz = visualizer.overlay_instances(labels=labels, boxes=bboxes, masks=masks)
-    
+
     return viz.get_image()
 
 
@@ -66,7 +66,7 @@ def forward(attn_obj):
         q, k, v = qkv.unbind(0)  # make torchscript happy (cannot use tensor as tuple)
 
         q = q * attn_obj.scale
-        attn = (q @ k.transpose(-2, -1))
+        attn = q @ k.transpose(-2, -1)
         attn = attn + attn_obj._get_rel_pos_bias()
 
         mask = None
@@ -86,10 +86,13 @@ def forward(attn_obj):
         x = attn_obj.proj(x)
         x = attn_obj.proj_drop(x)
         return x
+
     return _forward
 
 
 feature_maps = {}
+
+
 def forward_hook(m, inp, out):
     name = 'fmap'
     feature_maps[name] = out.cpu().numpy()  # .transpose(1, 0)
@@ -106,7 +109,7 @@ def main(args):
     predictor.model.backbone.bottom_up.model.model.layers[-1].blocks[-1].attn.forward = forward(
         predictor.model.backbone.bottom_up.model.model.layers[-1].blocks[-1].attn,
     )
-    
+
     # handler = predictor.model.backbone.bottom_up.model.model.layers[3].blocks[1].attn.register_forward_hook(forward_hook)
 
     image = cv.imread(args.image)
@@ -122,12 +125,14 @@ def main(args):
     plt.imshow(attn_cls, cmap='jet', alpha=0.5)
     plt.show()
 
-    import IPython; IPython.embed()
-    
+    import IPython
+
+    IPython.embed()
+
     # cv.imshow('image', image)
     # if cv.waitKey(0) & 0xFF == ord('q'):
     #     cv.destroyAllWindows()
-    
+
 
 if __name__ == '__main__':
 

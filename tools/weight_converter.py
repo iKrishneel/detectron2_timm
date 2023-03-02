@@ -44,9 +44,7 @@ def xcit_models(weights, model_name: str) -> OrderedDict:
                     break
 
             t = 'weight' if 'weight' in key else 'bias'
-            new_key = key.replace(
-                f'neck.fpn_convs.{x}.conv.{t}', f'backbone.fpn_output{j}.{t}'
-            )
+            new_key = key.replace(f'neck.fpn_convs.{x}.conv.{t}', f'backbone.fpn_output{j}.{t}')
         elif 'rpn_head' in key:
             t = 'weight' if 'weight' in key else 'bias'
             if 'conv' in key:
@@ -132,9 +130,7 @@ def swin_models(weights, model_name: str) -> OrderedDict:
                     n = f'backbone.norm{i}'
                     if n not in key:
                         continue
-                    new_key = key.replace(
-                        n, f'backbone.bottom_up.model.block{i+1}'
-                    )
+                    new_key = key.replace(n, f'backbone.bottom_up.model.block{i+1}')
                     break
 
         elif 'neck.lateral_convs' in key:
@@ -158,9 +154,7 @@ def swin_models(weights, model_name: str) -> OrderedDict:
                     break
 
             t = 'weight' if 'weight' in key else 'bias'
-            new_key = key.replace(
-                f'neck.fpn_convs.{x}.conv.{t}', f'backbone.fpn_output{j}.{t}'
-            )
+            new_key = key.replace(f'neck.fpn_convs.{x}.conv.{t}', f'backbone.fpn_output{j}.{t}')
         elif 'rpn_head' in key:
             t = 'weight' if 'weight' in key else 'bias'
             if 'conv' in key:
@@ -261,9 +255,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, required=True)
     parser.add_argument('--weights', type=str, required=True)
-    parser.add_argument(
-        '--output_dir', type=str, required=False, default='./logs'
-    )
+    parser.add_argument('--output_dir', type=str, required=False, default='./logs')
 
     args = parser.parse_args()
     main(args=args)
