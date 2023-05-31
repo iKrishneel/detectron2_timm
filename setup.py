@@ -21,13 +21,13 @@ install_requires = [
     'torchvision',
     'tqdm',
     'pytest',
-    'timm >= 0.6',
+    'timm >= 0.6, <=0.6.13',
 ]
 
 
 setup(
     name='detectron2_timm',
-    version='0.0.0',
+    version='0.0.1',
     long_description=readme,
     packages=find_packages(),
     zip_safe=False,
